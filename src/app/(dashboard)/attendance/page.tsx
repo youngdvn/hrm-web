@@ -93,7 +93,7 @@ export default function AttendancePage() {
     LATE: "Đi muộn",
     EARLY_LEAVE: "Về sớm",
     HALF_DAY: "Nửa ngày",
-    ABSENT: "Vắng mặt",
+    ABSENT: "Không đủ công",
   };
 
   const columns: ColumnsType<AttendanceRecord> = [
@@ -141,6 +141,21 @@ export default function AttendancePage() {
       render: (_, r) => {
         const hours = r.workingHours ?? r.workHours;
         return hours !== null && hours !== undefined ? `${hours} giờ` : "---";
+      },
+    },
+    {
+      title: "Tăng ca (OT)",
+      key: "overtime",
+      width: 125,
+      render: (_, r) => {
+        const ot = r.overtimeHours ?? r.otHours;
+        return ot && ot > 0 ? (
+          <Tag color="purple" className="font-semibold !px-2 !py-0.5">
+            +{ot}h OT
+          </Tag>
+        ) : (
+          <span className="text-slate-400">---</span>
+        );
       },
     },
     {
@@ -201,8 +216,8 @@ export default function AttendancePage() {
             <div className="text-4xl sm:text-5xl font-black text-slate-800 tracking-tight font-mono">
               {currentTime || "--:--:--"}
             </div>
-            <div className="text-xs text-slate-400 mt-2 flex items-center justify-center md:justify-start gap-1">
-              <ClockCircleOutlined /> Giờ tiêu chuẩn: 08:30 - 17:30
+            <div className="text-xs text-slate-500 mt-2 flex items-center justify-center md:justify-start gap-1.5 flex-wrap">
+              <ClockCircleOutlined /> Ca cố định: <span className="font-semibold text-slate-700">08:30 - 17:30</span> • <Tag color="purple" className="!mr-0 font-medium">Sau 17:30 tính Tăng ca (OT)</Tag>
             </div>
           </Col>
 

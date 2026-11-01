@@ -12,9 +12,11 @@ export interface AttendanceRecord {
   checkInTime?: string | null;
   checkOutTime?: string | null;
   workingHours?: number | null;
+  overtimeHours?: number | null;
   checkIn?: string | null;
   checkOut?: string | null;
   workHours?: number | null;
+  otHours?: number | null;
   status: AttendanceStatus;
   notes?: string | null;
   employee?: {

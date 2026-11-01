@@ -87,9 +87,15 @@ export function EmployeeDashboard() {
                   Đã Check-in: {dayjs(checkInTime).format("HH:mm")}
                 </Tag>
                 {checkOutTime ? (
-                  <div className="text-xs text-slate-500">
-                    Check-out: {dayjs(checkOutTime).format("HH:mm")} (
-                    {hours}h)
+                  <div className="text-xs text-slate-500 space-y-1">
+                    <div>
+                      Check-out: {dayjs(checkOutTime).format("HH:mm")} ({hours}h)
+                    </div>
+                    {todayRecord?.overtimeHours && todayRecord.overtimeHours > 0 ? (
+                      <Tag color="purple" className="!mr-0 font-semibold">
+                        +{todayRecord.overtimeHours}h Tăng ca (OT)
+                      </Tag>
+                    ) : null}
                   </div>
                 ) : (
                   <div className="text-xs text-slate-400">Chưa check-out</div>

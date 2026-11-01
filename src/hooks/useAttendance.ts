@@ -13,6 +13,8 @@ const normalizeRecord = (r: AttendanceRecord): AttendanceRecord => ({
   checkInTime: r.checkInTime || r.checkIn || null,
   checkOutTime: r.checkOutTime || r.checkOut || null,
   workingHours: r.workingHours ?? r.workHours ?? null,
+  overtimeHours: r.overtimeHours ?? r.otHours ?? 0,
+  otHours: r.otHours ?? r.overtimeHours ?? 0,
 });
 
 export function useAttendance(params?: AttendanceFilterParams) {
