@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "@/lib/antd-app";
 import { request, parseApiError } from "@/lib/api-client";
 import { AttendanceRecord, AttendanceFilterParams } from "@/types/attendance.types";
+import { useI18nStore } from "@/stores/i18n.store";
 
 const normalizeRecord = (r: AttendanceRecord): AttendanceRecord => ({
   ...r,
@@ -48,10 +49,11 @@ export function useAttendance(params?: AttendanceFilterParams) {
       return res.data;
     },
     onSuccess: (data) => {
+      const t = useI18nStore.getState().t;
       message.success(
         data.status === "LATE"
-          ? "Check-in thành công (Ghi nhận đi muộn)"
-          : "Check-in thành công đúng giờ!"
+          ? t.attendance.clockInLateSuccess
+          : t.attendance.clockInOnTimeSuccess
       );
       queryClient.invalidateQueries({ queryKey: ["attendance-my-history"] });
       queryClient.invalidateQueries({ queryKey: ["attendance-company"] });
@@ -70,8 +72,9 @@ export function useAttendance(params?: AttendanceFilterParams) {
       return res.data;
     },
     onSuccess: (data) => {
+      const t = useI18nStore.getState().t;
       const totalHours = data.workingHours ?? data.workHours ?? 0;
-      message.success(`Check-out thành công! Tổng giờ làm: ${totalHours}h`);
+      message.success(`${t.attendance.clockOutSuccess} ${t.attendance.totalWorkHoursLabel}: ${totalHours}h`);
       queryClient.invalidateQueries({ queryKey: ["attendance-my-history"] });
       queryClient.invalidateQueries({ queryKey: ["attendance-company"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });

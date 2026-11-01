@@ -44,7 +44,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
     {
       key: "/employees",
       icon: <TeamOutlined />,
-      label: isHrOrAdmin ? t.common.employees : "Danh bạ nhân viên",
+      label: t.common.employees,
     },
     ...(isHrOrAdmin
       ? [
@@ -75,14 +75,14 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
           {
             key: "/contracts",
             icon: <FileTextOutlined />,
-            label: "Hợp đồng lao động",
+            label: t.common.contracts,
           },
         ]
       : []),
     {
       key: "/payroll",
       icon: <DollarCircleOutlined />,
-      label: isHrOrAdmin ? "Kỳ lương & Tính lương" : "Phiếu lương của tôi",
+      label: t.common.payroll,
     },
     {
       key: "/chat",
@@ -94,7 +94,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
           {
             key: "/audit-logs",
             icon: <SafetyCertificateOutlined />,
-            label: "Nhật ký kiểm toán",
+            label: t.common.auditLogs,
           },
         ]
       : []),

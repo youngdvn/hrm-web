@@ -10,15 +10,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18nStore } from "@/stores/i18n.store";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { parseApiError } from "@/lib/api-client";
+import { loginSchema, LoginFormData } from "@/schemas";
 
 const { Title, Text } = Typography;
-
-const loginSchema = z.object({
-  email: z.string().email("Email không hợp lệ").min(1, "Vui lòng nhập email"),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const { login, isLoggingIn } = useAuth();

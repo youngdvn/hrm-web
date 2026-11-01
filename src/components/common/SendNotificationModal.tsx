@@ -5,6 +5,7 @@ import { Modal, Form, Input, Select, Radio } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 import { useEmployees } from "@/hooks/useEmployees";
 import { NotificationType, SendNotificationPayload } from "@/types/notification.types";
+import { useI18nStore } from "@/stores/i18n.store";
 
 const { Option } = Select;
 
@@ -21,6 +22,7 @@ export default function SendNotificationModal({
   onSend,
   isSending,
 }: SendNotificationModalProps) {
+  const { t } = useI18nStore();
   const [targetType, setTargetType] = useState<"ALL" | "SPECIFIC">("ALL");
   const [selectedUserId, setSelectedUserId] = useState<string | undefined>(undefined);
   const [title, setTitle] = useState("");
@@ -56,30 +58,30 @@ export default function SendNotificationModal({
       open={open}
       title={
         <span className="flex items-center gap-2">
-          <SendOutlined className="text-blue-600" /> Soạn thông báo nội bộ
+          <SendOutlined className="text-blue-600" /> {t.notification.sendNotification}
         </span>
       }
       onCancel={onClose}
       onOk={handleSendSubmit}
       confirmLoading={isSending}
-      okText="Gửi ngay"
-      cancelText="Hủy"
+      okText={t.notification.sendBtn}
+      cancelText={t.common.cancel}
       destroyOnHidden
     >
       <Form layout="vertical" className="pt-3">
-        <Form.Item label="Đối tượng nhận" required>
+        <Form.Item label={t.notification.selectRecipient} required>
           <Radio.Group
             value={targetType}
             onChange={(e) => setTargetType(e.target.value)}
             className="mb-2"
           >
-            <Radio value="ALL">Toàn thể nhân viên (Broadcast)</Radio>
-            <Radio value="SPECIFIC">Gửi cho 1 nhân viên cụ thể</Radio>
+            <Radio value="ALL">{t.notification.targetAll}</Radio>
+            <Radio value="SPECIFIC">{t.notification.targetSpecific}</Radio>
           </Radio.Group>
 
           {targetType === "SPECIFIC" && (
             <Select
-              placeholder="Chọn nhân viên nhận thông báo"
+              placeholder={t.notification.selectRecipient}
               value={selectedUserId}
               onChange={(val) => setSelectedUserId(val)}
               showSearch
@@ -97,7 +99,7 @@ export default function SendNotificationModal({
           )}
         </Form.Item>
 
-        <Form.Item label="Loại thông báo" required>
+        <Form.Item label={t.common.status} required>
           <Select
             value={notifType}
             onChange={(val) => setNotifType(val)}
@@ -110,28 +112,28 @@ export default function SendNotificationModal({
           </Select>
         </Form.Item>
 
-        <Form.Item label="Tiêu đề thông báo" required>
+        <Form.Item label={t.notification.notificationTitle} required>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Nhập tiêu đề thông báo..."
+            placeholder={t.notification.notificationTitle}
             maxLength={150}
             showCount
           />
         </Form.Item>
 
-        <Form.Item label="Nội dung thông báo" required>
+        <Form.Item label={t.notification.notificationMessage} required>
           <Input.TextArea
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
-            placeholder="Nhập nội dung chi tiết thông báo..."
+            placeholder={t.notification.notificationMessage}
             rows={4}
             maxLength={1000}
             showCount
           />
         </Form.Item>
 
-        <Form.Item label="Đường link điều hướng (tùy chọn)">
+        <Form.Item label={t.notification.linkOptional}>
           <Input
             value={link}
             onChange={(e) => setLink(e.target.value)}
@@ -142,4 +144,3 @@ export default function SendNotificationModal({
     </Modal>
   );
 }
-

@@ -22,6 +22,7 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { usePayroll } from "@/hooks/usePayroll";
 import { useAuthStore } from "@/stores/auth.store";
+import { useI18nStore } from "@/stores/i18n.store";
 import {
   PayrollPeriod,
   Payslip,
@@ -45,6 +46,7 @@ const formatVnd = (val: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(val);
 
 export default function PayrollPage() {
+  const { t } = useI18nStore();
   const { hasRole } = useAuthStore();
   const isHrOrAdmin = hasRole(["ADMIN", "HR"]);
 
@@ -71,31 +73,31 @@ export default function PayrollPage() {
   };
 
   const periodStatusMap: Record<PayrollPeriodStatus, { label: string; color: string }> = {
-    DRAFT: { label: "Bản nháp", color: "default" },
-    OPEN: { label: "Mở kỳ lương", color: "blue" },
-    PROCESSING: { label: "Đang xử lý", color: "processing" },
+    DRAFT: { label: t.payroll.statusDraft, color: "default" },
+    OPEN: { label: t.payroll.statusOpen, color: "blue" },
+    PROCESSING: { label: t.payroll.statusProcessing, color: "processing" },
     CALCULATED: { label: "Đã tính toán", color: "warning" },
     PAID: { label: "Đã thanh toán", color: "cyan" },
-    CLOSED: { label: "Đã chốt & Xuất bảng lương", color: "success" },
+    CLOSED: { label: t.payroll.statusClosed, color: "success" },
   };
 
   const periodColumns: ColumnsType<PayrollPeriod> = [
     {
-      title: "Kỳ tính lương",
+      title: t.payroll.periodName,
       dataIndex: "name",
       key: "name",
       render: (name, r) => (
         <div>
           <div className="font-semibold text-slate-800">{name}</div>
           <div className="text-xs text-slate-400">
-            Tháng {r.month}/{r.year} ({dayjs(r.startDate).format("DD/MM")} -{" "}
+            {t.payroll.month} {r.month}/{r.year} ({dayjs(r.startDate).format("DD/MM")} -{" "}
             {dayjs(r.endDate).format("DD/MM/YYYY")})
           </div>
         </div>
       ),
     },
     {
-      title: "Trạng thái",
+      title: t.common.status,
       dataIndex: "status",
       key: "status",
       render: (st: PayrollPeriodStatus) => {
@@ -106,10 +108,14 @@ export default function PayrollPage() {
     {
       title: "Số phiếu lương",
       key: "count",
-      render: (_, r) => <span>{r._count?.payslips ?? 0} nhân viên</span>,
+      render: (_, r) => (
+        <span>
+          {r._count?.payslips ?? 0} {t.common.records}
+        </span>
+      ),
     },
     {
-      title: "Thao tác",
+      title: t.common.actions,
       key: "actions",
       render: (_, r) => (
         <Space>
@@ -121,42 +127,43 @@ export default function PayrollPage() {
               setPeriodPayslipsModalOpen(true);
             }}
           >
-            Chi tiết
+            {t.common.viewDetails}
           </Button>
 
           {r.status !== "CLOSED" && (
             <Popconfirm
               title="Tính toán bảng lương toàn thể nhân viên cho kỳ này?"
               onConfirm={() => calculatePeriod({ periodId: r.id })}
-              okText="Tính toán"
-              cancelText="Hủy"
+              okText={t.payroll.calculate}
+              cancelText={t.common.cancel}
             >
               <Button
-                type="primary"
                 size="small"
+                type="primary"
                 icon={<CalculatorOutlined />}
                 loading={isCalculating}
-                className="!bg-blue-600 hover:!bg-blue-700"
+                className="!bg-amber-600 hover:!bg-amber-700"
               >
-                Tính lương
+                {t.payroll.calculate}
               </Button>
             </Popconfirm>
           )}
 
           {r.status === "CALCULATED" && (
             <Popconfirm
-              title="Chốt bảng lương? Nhân viên sẽ xem được phiếu lương của họ."
+              title="Chốt kỳ lương và gửi phiếu lương cho toàn thể nhân viên?"
               onConfirm={() => closePeriod(r.id)}
-              okText="Chốt sổ"
-              cancelText="Hủy"
+              okText={t.payroll.closePeriod}
+              cancelText={t.common.cancel}
             >
               <Button
                 size="small"
+                type="primary"
                 icon={<CheckCircleOutlined />}
                 loading={isClosingPeriod}
-                className="!text-emerald-600 !border-emerald-600 hover:!bg-emerald-50"
+                className="!bg-emerald-600 hover:!bg-emerald-700"
               >
-                Chốt kỳ lương
+                {t.payroll.closePeriod}
               </Button>
             </Popconfirm>
           )}
@@ -167,19 +174,22 @@ export default function PayrollPage() {
 
   const myPayslipColumns: ColumnsType<Payslip> = [
     {
-      title: "Lương cơ bản",
-      dataIndex: "baseSalary",
-      key: "baseSalary",
-      render: (v) => formatVnd(v),
+      title: t.payroll.periodName,
+      key: "periodName",
+      render: (_, r) => (
+        <div>
+          <div className="font-semibold text-slate-800">{r.payrollPeriod?.name}</div>
+          <div className="text-xs text-slate-400">
+            {t.payroll.month} {r.payrollPeriod?.month}/{r.payrollPeriod?.year}
+          </div>
+        </div>
+      ),
     },
     {
-      title: "Công chuẩn / Thực tế",
-      key: "workDays",
-      render: (_, r) => (
-        <span className="text-xs">
-          <b>{r.actualWorkDays}</b> / {r.standardWorkDays} ngày
-        </span>
-      ),
+      title: "Lương chuẩn",
+      dataIndex: "standardSalary",
+      key: "standardSalary",
+      render: (v) => formatVnd(v),
     },
     {
       title: "Lương thực tế",
@@ -188,13 +198,13 @@ export default function PayrollPage() {
       render: (v) => formatVnd(v),
     },
     {
-      title: "Phụ cấp",
-      dataIndex: "allowance",
-      key: "allowance",
-      render: (v) => formatVnd(v),
+      title: t.attendance.overtime,
+      dataIndex: "overtimePay",
+      key: "overtimePay",
+      render: (v) => (v > 0 ? <span className="text-emerald-600">+{formatVnd(v)}</span> : "---"),
     },
     {
-      title: "Trừ BH (10.5%)",
+      title: "Bảo hiểm",
       dataIndex: "insuranceDeduction",
       key: "insuranceDeduction",
       render: (v) => <span className="text-rose-600">-{formatVnd(v)}</span>,
@@ -216,7 +226,7 @@ export default function PayrollPage() {
       ),
     },
     {
-      title: "Trạng thái",
+      title: t.common.status,
       dataIndex: "status",
       key: "status",
       render: (st) => (
@@ -230,10 +240,10 @@ export default function PayrollPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <Title level={3} className="!mb-1">
-            Quản lý Kỳ lương & Tính lương
+            {t.payroll.title}
           </Title>
           <Text type="secondary">
-            Tự động tổng hợp ngày công, khấu trừ bảo hiểm, tính thuế TNCN và lương NET
+            {t.payroll.subtitle}
           </Text>
         </div>
 
@@ -245,7 +255,7 @@ export default function PayrollPage() {
             onClick={() => setCreateModalOpen(true)}
             className="!shadow-md !shadow-blue-500/20"
           >
-            Tạo kỳ lương mới
+            {t.payroll.createPeriod}
           </Button>
         )}
       </div>

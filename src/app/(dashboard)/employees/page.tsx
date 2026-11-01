@@ -248,9 +248,8 @@ export default function EmployeesPage() {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            size="large"
+            size="middle"
             onClick={handleOpenCreate}
-            className="!shadow-md !shadow-blue-500/20"
           >
             {t.employee.addNew}
           </Button>

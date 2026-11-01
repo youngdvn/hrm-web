@@ -4,37 +4,18 @@ import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Drawer, Form, Input, Select, DatePicker, Button, Space, Row, Col, Avatar, Upload } from "antd";
-import { UploadOutlined, UserOutlined } from "@ant-design/icons";
+import { Drawer, Form, Input, Select, DatePicker, Button, Space, Row, Col, Avatar, Upload, Switch } from "antd";
+import { UploadOutlined, UserOutlined, KeyOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import { Employee, Department, Position, CreateEmployeeInput } from "@/types/employee.types";
+import { employeeFormSchema, EmployeeFormValues } from "@/schemas";
 import { useI18nStore } from "@/stores/i18n.store";
 import { request, parseApiError, getMediaUrl } from "@/lib/api-client";
 import { message } from "@/lib/antd-app";
 
 const { Option } = Select;
 
-const employeeFormSchema = z.object({
-  employeeCode: z
-    .string()
-    .min(2, "Mã nhân viên tối thiểu 2 ký tự")
-    .max(20, "Mã nhân viên tối đa 20 ký tự")
-    .transform((val) => val.trim().toUpperCase()),
-  firstName: z.string().min(1, "Vui lòng nhập tên").transform((val) => val.trim()),
-  lastName: z.string().min(1, "Vui lòng nhập họ đệm").transform((val) => val.trim()),
-  email: z.string().email("Email không hợp lệ").transform((val) => val.trim().toLowerCase()),
-  phone: z.string().optional(),
-  avatarUrl: z.string().optional(),
-  gender: z.enum(["MALE", "FEMALE", "OTHER"]),
-  status: z.enum(["PROBATION", "ACTIVE", "ON_LEAVE", "TERMINATED"]),
-  dateOfBirth: z.custom<Dayjs | null>().optional(),
-  hireDate: z.custom<Dayjs | null>().optional(),
-  departmentId: z.string().optional(),
-  positionId: z.string().optional(),
-  address: z.string().optional(),
-});
-
-type EmployeeFormValues = z.infer<typeof employeeFormSchema>;
+export type { EmployeeFormValues };
 
 interface EmployeeDrawerProps {
   open: boolean;
@@ -65,6 +46,7 @@ export function EmployeeDrawer({
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeFormSchema),
@@ -82,8 +64,15 @@ export function EmployeeDrawer({
       departmentId: undefined,
       positionId: undefined,
       address: "",
+      createAccount: true,
+      role: "EMPLOYEE",
+      initialPassword: "",
     },
   });
+
+  const watchCreateAccount = watch("createAccount");
+  const watchEmployeeCode = watch("employeeCode");
+  const watchInitialPassword = watch("initialPassword");
 
   useEffect(() => {
     if (!open) return;
@@ -104,6 +93,9 @@ export function EmployeeDrawer({
         departmentId: initialData.departmentId || undefined,
         positionId: initialData.positionId || undefined,
         address: initialData.address || "",
+        createAccount: false,
+        role: "EMPLOYEE",
+        initialPassword: "",
       });
     } else {
       setAvatarUrl(undefined);
@@ -121,6 +113,9 @@ export function EmployeeDrawer({
         departmentId: undefined,
         positionId: undefined,
         address: "",
+        createAccount: true,
+        role: "EMPLOYEE",
+        initialPassword: "",
       });
     }
   }, [initialData, reset, open]);
@@ -178,7 +173,10 @@ export function EmployeeDrawer({
       hireDate: values.hireDate ? values.hireDate.toISOString() : new Date().toISOString(),
       departmentId: values.departmentId || undefined,
       positionId: values.positionId || undefined,
-      address: values.address || undefined,
+      address: values.address?.trim() || undefined,
+      createAccount: values.createAccount ?? true,
+      role: values.role || "EMPLOYEE",
+      initialPassword: values.initialPassword?.trim() || "new12345",
     };
 
     await onSubmit(payload);
@@ -434,6 +432,76 @@ export function EmployeeDrawer({
             </Form.Item>
           </Col>
         </Row>
+
+        {/* Thiết lập tài khoản đăng nhập khi tạo mới */}
+        {!isEdit && (
+          <div className="mt-4 p-4 rounded-xl bg-blue-50/70 border border-blue-200/80">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <KeyOutlined className="text-blue-600 font-semibold" />
+                <span className="font-semibold text-slate-800 text-sm">
+                  Cấp tài khoản đăng nhập hệ thống
+                </span>
+              </div>
+              <Controller
+                name="createAccount"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    checked={field.value}
+                    onChange={field.onChange}
+                    checkedChildren="Cấp TK"
+                    unCheckedChildren="Không"
+                  />
+                )}
+              />
+            </div>
+
+            {watchCreateAccount && (
+              <div className="space-y-3 pt-1">
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Form.Item label="Phân quyền (Role)" className="!mb-2">
+                      <Controller
+                        name="role"
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field} className="w-full">
+                            <Option value="EMPLOYEE">Nhân viên (EMPLOYEE)</Option>
+                            <Option value="HR">Nhân sự (HR)</Option>
+                            <Option value="MANAGER">Quản lý (MANAGER)</Option>
+                            <Option value="ADMIN">Quản trị viên (ADMIN)</Option>
+                          </Select>
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item label="Mật khẩu tùy chọn" className="!mb-2">
+                      <Controller
+                        name="initialPassword"
+                        control={control}
+                        render={({ field }) => (
+                          <Input.Password
+                            {...field}
+                            placeholder="Mặc định: new12345"
+                          />
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <div className="text-[11px] text-blue-700 bg-blue-100/70 px-3 py-2 rounded-lg leading-relaxed">
+                  💡 Tài khoản sẽ dùng <b>Email nhân viên</b> để đăng nhập. Mật khẩu khởi tạo là:{" "}
+                  <span className="font-mono font-bold text-blue-900 bg-white/80 px-1.5 py-0.5 rounded border border-blue-200">
+                    {watchInitialPassword || "new12345"}
+                  </span>
+                  . Nhân viên có thể đổi mật khẩu sau khi đăng nhập.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </Form>
     </Drawer>
   );

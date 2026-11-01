@@ -3,6 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Table, Button, Card, Typography, Popconfirm, Space } from "antd";
+import { message } from "@/lib/antd-app";
 import { PlusOutlined, EditOutlined, DeleteOutlined, IdcardOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { usePositions } from "@/hooks/usePositions";
@@ -10,7 +11,7 @@ import { Position } from "@/types/employee.types";
 import { useAuthStore } from "@/stores/auth.store";
 import { useI18nStore } from "@/stores/i18n.store";
 import { RoleGuard } from "@/components/common/RoleGuard";
-import type { PositionFormValues } from "@/components/positions/PositionModal";
+import type { PositionFormValues } from "@/schemas";
 
 const PositionModal = dynamic(
   () => import("@/components/positions/PositionModal"),
@@ -31,9 +32,7 @@ export default function PositionsPage() {
     positions,
     isLoading,
     createPosition,
-    isCreating,
     updatePosition,
-    isUpdating,
     deletePosition,
   } = usePositions();
 
@@ -50,23 +49,30 @@ export default function PositionsPage() {
   const onSubmit = async (values: PositionFormValues) => {
     if (editingPosition) {
       await updatePosition({ id: editingPosition.id, data: values });
+      message.success(t.position.updateSuccess);
     } else {
       await createPosition(values);
+      message.success(t.position.createSuccess);
     }
     setModalOpen(false);
     setEditingPosition(null);
   };
 
+  const handleDelete = async (id: string) => {
+    await deletePosition(id);
+    message.success(t.position.deleteSuccess);
+  };
+
   const columns: ColumnsType<Position> = [
     {
-      title: "Mã chức vụ",
+      title: t.position.code,
       dataIndex: "code",
       key: "code",
       width: 150,
       render: (code) => <span className="font-semibold text-blue-600">{code}</span>,
     },
     {
-      title: "Tên chức vụ / Vị trí",
+      title: t.position.positionTitle,
       dataIndex: "title",
       key: "title",
       render: (title) => (
@@ -76,16 +82,20 @@ export default function PositionsPage() {
       ),
     },
     {
-      title: "Mô tả công việc",
+      title: t.position.description,
       dataIndex: "description",
       key: "description",
       render: (desc) => desc || <Text type="secondary">---</Text>,
     },
     {
-      title: "Số nhân sự đảm nhiệm",
+      title: t.position.employeeCount,
       key: "employeeCount",
       width: 170,
-      render: (_, r) => <span>{r._count?.employees ?? 0} nhân sự</span>,
+      render: (_, r) => (
+        <span>
+          {r._count?.employees ?? 0} {t.common.records}
+        </span>
+      ),
     },
     ...(isHrOrAdmin
       ? [
@@ -101,9 +111,11 @@ export default function PositionsPage() {
                   onClick={() => handleOpenEdit(record)}
                 />
                 <Popconfirm
-                  title="Bạn có chắc muốn xóa chức vụ này?"
-                  onConfirm={() => deletePosition(record.id)}
+                  title={t.position.confirmDelete}
+                  onConfirm={() => handleDelete(record.id)}
                   okButtonProps={{ danger: true }}
+                  okText={t.common.delete}
+                  cancelText={t.common.cancel}
                 >
                   <Button type="text" danger icon={<DeleteOutlined />} />
                 </Popconfirm>
@@ -120,9 +132,9 @@ export default function PositionsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <Title level={3} className="!mb-1">
-              Quản lý Chức vụ / Vị trí
+              {t.position.title}
             </Title>
-            <Text type="secondary">Danh mục vị trí chuyên môn và hệ thống chức danh doanh nghiệp</Text>
+            <Text type="secondary">{t.position.subtitle}</Text>
           </div>
 
           {isHrOrAdmin && (
@@ -133,7 +145,7 @@ export default function PositionsPage() {
               onClick={handleOpenCreate}
               className="!shadow-md !shadow-blue-500/20"
             >
-              Thêm chức vụ mới
+              {t.position.addNew}
             </Button>
           )}
         </div>
@@ -148,7 +160,6 @@ export default function PositionsPage() {
           />
         </Card>
 
-        {/* Lazy Loaded Position Modal */}
         {modalOpen && (
           <PositionModal
             open={modalOpen}
@@ -158,7 +169,7 @@ export default function PositionsPage() {
               setEditingPosition(null);
             }}
             onSubmit={onSubmit}
-            isLoading={isCreating || isUpdating}
+            isLoading={false}
           />
         )}
       </div>

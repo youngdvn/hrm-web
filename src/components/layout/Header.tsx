@@ -97,7 +97,7 @@ export function Header({ collapsed, onToggle }: HeaderProps) {
         <div className="h-4 w-px bg-slate-200" />
 
         <Dropdown menu={{ items: userMenuItems }} trigger={["click"]} placement="bottomRight">
-          <div className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 p-1.5 rounded-lg transition-colors">
+          <div className="flex items-center gap-2 cursor-pointer rounded-lg">
             <Avatar
               src={getMediaUrl(user?.employee?.avatarUrl)}
               className="!bg-blue-600 font-semibold shrink-0"
@@ -109,9 +109,6 @@ export function Header({ collapsed, onToggle }: HeaderProps) {
               <div className="text-xs font-semibold text-slate-700 leading-tight">
                 {user?.fullName || "User"}
               </div>
-              <Tag color={roleColorMap[userRole] || "default"} className="!mr-0 text-[10px] leading-none py-0.5">
-                {userRole}
-              </Tag>
             </div>
           </div>
         </Dropdown>

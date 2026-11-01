@@ -39,7 +39,7 @@ export function DepartmentChart({ departments }: DepartmentChartProps) {
               <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
               <RechartsTooltip
                 contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0" }}
-                formatter={(val) => [`${val} nhân sự`, "Số lượng"]}
+                formatter={(val) => [`${val} ${t.common.records}`, t.department.employeeCount]}
               />
               <Bar dataKey="count" fill="#1677ff" radius={[6, 6, 0, 0]} />
             </BarChart>
@@ -47,7 +47,7 @@ export function DepartmentChart({ departments }: DepartmentChartProps) {
         </div>
       ) : (
         <div className="h-72 flex items-center justify-center text-slate-400">
-          Chưa có dữ liệu phòng ban
+          {t.common.noData}
         </div>
       )}
     </Card>

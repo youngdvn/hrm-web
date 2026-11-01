@@ -12,7 +12,7 @@ import { Department } from "@/types/employee.types";
 import { useAuthStore } from "@/stores/auth.store";
 import { useI18nStore } from "@/stores/i18n.store";
 import { RoleGuard } from "@/components/common/RoleGuard";
-import type { DepartmentFormValues } from "@/components/departments/DepartmentModal";
+import type { DepartmentFormValues } from "@/schemas";
 
 const DepartmentModal = dynamic(
   () => import("@/components/departments/DepartmentModal"),
@@ -46,7 +46,7 @@ export default function DepartmentsPage() {
       return request.post("departments", values);
     },
     onSuccess: () => {
-      message.success(editingDept ? "Cập nhật phòng ban thành công" : "Tạo phòng ban thành công");
+      message.success(editingDept ? t.department.updateSuccess : t.department.createSuccess);
       queryClient.invalidateQueries({ queryKey: ["departments"] });
       setModalOpen(false);
       setEditingDept(null);
@@ -62,7 +62,7 @@ export default function DepartmentsPage() {
       return request.delete(`departments/${id}`);
     },
     onSuccess: () => {
-      message.success("Xóa phòng ban thành công");
+      message.success(t.department.deleteSuccess);
       queryClient.invalidateQueries({ queryKey: ["departments"] });
     },
     onError: async (err) => {
@@ -83,29 +83,33 @@ export default function DepartmentsPage() {
 
   const columns: ColumnsType<Department> = [
     {
-      title: "Mã phòng ban",
+      title: t.department.code,
       dataIndex: "code",
       key: "code",
       width: 140,
       render: (c) => <span className="font-semibold text-blue-600">{c}</span>,
     },
     {
-      title: "Tên phòng ban",
+      title: t.department.name,
       dataIndex: "name",
       key: "name",
       render: (n) => <span className="font-medium text-slate-800">{n}</span>,
     },
     {
-      title: "Mô tả",
+      title: t.department.description,
       dataIndex: "description",
       key: "description",
       render: (d) => d || <Text type="secondary">---</Text>,
     },
     {
-      title: "Số nhân viên",
+      title: t.department.employeeCount,
       key: "employeeCount",
-      width: 130,
-      render: (_, r) => <span>{r._count?.employees ?? 0} nhân sự</span>,
+      width: 140,
+      render: (_, r) => (
+        <span>
+          {r._count?.employees ?? 0} {t.common.records}
+        </span>
+      ),
     },
     ...(isHrOrAdmin
       ? [
@@ -121,9 +125,11 @@ export default function DepartmentsPage() {
                   onClick={() => handleOpenEdit(record)}
                 />
                 <Popconfirm
-                  title="Bạn có chắc muốn xóa phòng ban này?"
+                  title={t.department.confirmDelete}
                   onConfirm={() => deleteMutation.mutate(record.id)}
                   okButtonProps={{ danger: true }}
+                  okText={t.common.delete}
+                  cancelText={t.common.cancel}
                 >
                   <Button type="text" danger icon={<DeleteOutlined />} />
                 </Popconfirm>
@@ -140,9 +146,9 @@ export default function DepartmentsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <Title level={3} className="!mb-1">
-              Quản lý Phòng ban
+              {t.department.title}
             </Title>
-            <Text type="secondary">Cơ cấu tổ chức các phòng ban chuyên môn trong doanh nghiệp</Text>
+            <Text type="secondary">{t.department.subtitle}</Text>
           </div>
 
           {isHrOrAdmin && (
@@ -153,7 +159,7 @@ export default function DepartmentsPage() {
               onClick={handleOpenCreate}
               className="!shadow-md !shadow-blue-500/20"
             >
-              Thêm phòng ban
+              {t.department.addNew}
             </Button>
           )}
         </div>
@@ -168,7 +174,6 @@ export default function DepartmentsPage() {
           />
         </Card>
 
-        {/* Lazy Loaded Department Modal */}
         {modalOpen && (
           <DepartmentModal
             open={modalOpen}

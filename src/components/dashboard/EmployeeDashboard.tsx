@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import { useAuthStore } from "@/stores/auth.store";
+import { useI18nStore } from "@/stores/i18n.store";
 import { useAttendance } from "@/hooks/useAttendance";
 import { useLeaves } from "@/hooks/useLeaves";
 import { usePayroll } from "@/hooks/usePayroll";
@@ -21,6 +22,7 @@ const { Title, Text } = Typography;
 
 export function EmployeeDashboard() {
   const router = useRouter();
+  const { t } = useI18nStore();
   const { user } = useAuthStore();
   const { myHistory } = useAttendance();
   const { myBalance } = useLeaves();
@@ -51,8 +53,8 @@ export function EmployeeDashboard() {
             <div>
               <div className="text-xl font-bold">{user?.fullName}</div>
               <div className="text-blue-100 text-xs mt-0.5">
-                Mã NV: {user?.employee?.employeeCode || "---"} •{" "}
-                {user?.employee?.department?.name || "Chưa phân bổ"}
+                {t.employee.employeeCode}: {user?.employee?.employeeCode || "---"} •{" "}
+                {user?.employee?.department?.name || t.common.unassigned}
               </div>
             </div>
           </div>
@@ -61,13 +63,13 @@ export function EmployeeDashboard() {
               className="!bg-white/10 !text-white !border-white/20 hover:!bg-white/20"
               onClick={() => router.push("/attendance")}
             >
-              Chấm công ngay
+              {t.attendance.clockIn}
             </Button>
             <Button
               className="!bg-white !text-blue-600 !border-white hover:!bg-blue-50 font-semibold"
               onClick={() => router.push("/leaves")}
             >
-              Nộp đơn nghỉ phép
+              {t.leave.createRequest}
             </Button>
           </div>
         </div>
@@ -78,35 +80,35 @@ export function EmployeeDashboard() {
         <Col xs={24} sm={8}>
           <Card className="shadow-xs border-slate-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Chấm công hôm nay</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase">{t.attendance.todayStatus}</span>
               <FieldTimeOutlined className="text-blue-500 text-lg" />
             </div>
             {checkInTime ? (
               <div>
                 <Tag color="green" className="mb-1">
-                  Đã Check-in: {dayjs(checkInTime).format("HH:mm")}
+                  {t.attendance.checkedIn}: {dayjs(checkInTime).format("HH:mm")}
                 </Tag>
                 {checkOutTime ? (
                   <div className="text-xs text-slate-500 space-y-1">
                     <div>
-                      Check-out: {dayjs(checkOutTime).format("HH:mm")} ({hours}h)
+                      {t.attendance.checkOutTime}: {dayjs(checkOutTime).format("HH:mm")} ({hours} {t.attendance.hoursUnit})
                     </div>
                     {todayRecord?.overtimeHours && todayRecord.overtimeHours > 0 ? (
                       <Tag color="purple" className="!mr-0 font-semibold">
-                        +{todayRecord.overtimeHours}h Tăng ca (OT)
+                        +{todayRecord.overtimeHours}h {t.attendance.overtime}
                       </Tag>
                     ) : null}
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-400">Chưa check-out</div>
+                  <div className="text-xs text-slate-400">{t.attendance.notCheckedOut}</div>
                 )}
               </div>
             ) : (
               <div>
                 <Tag color="orange" className="mb-1">
-                  Chưa Check-in
+                  {t.attendance.notCheckedIn}
                 </Tag>
-                <div className="text-xs text-slate-400">Ca làm việc bắt đầu 08:30</div>
+                <div className="text-xs text-slate-400">{t.attendance.shiftStartAt}</div>
               </div>
             )}
           </Card>
@@ -115,15 +117,15 @@ export function EmployeeDashboard() {
         <Col xs={24} sm={8}>
           <Card className="shadow-xs border-slate-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Ngày phép năm còn lại</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase">{t.leave.remainingDays}</span>
               <CalendarOutlined className="text-emerald-500 text-lg" />
             </div>
             <div className="text-2xl font-bold text-emerald-600">
               {myBalance?.remainingDays ?? 12}{" "}
-              <span className="text-xs font-normal text-slate-400">/ {myBalance?.totalDays ?? 12} ngày</span>
+              <span className="text-xs font-normal text-slate-400">/ {myBalance?.totalDays ?? 12} {t.leave.daysUnit}</span>
             </div>
             <div className="text-xs text-slate-400 mt-1">
-              Đã nghỉ: {myBalance?.usedDays ?? 0} ngày
+              {t.leave.usedDays}: {myBalance?.usedDays ?? 0} {t.leave.daysUnit}
             </div>
           </Card>
         </Col>
@@ -131,7 +133,7 @@ export function EmployeeDashboard() {
         <Col xs={24} sm={8}>
           <Card className="shadow-xs border-slate-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Phiếu lương gần nhất</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase">{t.payroll.latestPayslip}</span>
               <DollarCircleOutlined className="text-amber-500 text-lg" />
             </div>
             {latestPayslip ? (
@@ -140,13 +142,13 @@ export function EmployeeDashboard() {
                   {Number(latestPayslip.netSalary).toLocaleString("vi-VN")} đ
                 </div>
                 <div className="text-xs text-slate-400 mt-1">
-                  {latestPayslip.payrollPeriod?.name || "Kỳ lương gần nhất"}
+                  {latestPayslip.payrollPeriod?.name || t.payroll.latestPeriod}
                 </div>
               </div>
             ) : (
               <div>
-                <div className="text-base font-semibold text-slate-400">Chưa có phiếu lương</div>
-                <div className="text-xs text-slate-400 mt-1">Kỳ lương đầu tiên đang tính</div>
+                <div className="text-base font-semibold text-slate-400">{t.payroll.noPayslips}</div>
+                <div className="text-xs text-slate-400 mt-1">{t.payroll.calculatingFirstPeriod}</div>
               </div>
             )}
           </Card>
@@ -157,10 +159,10 @@ export function EmployeeDashboard() {
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12}>
           <Card
-            title={<span className="font-semibold text-slate-700">Lịch sử Chấm công gần đây</span>}
+            title={<span className="font-semibold text-slate-700">{t.attendance.recentHistory}</span>}
             extra={
               <Button type="link" size="small" onClick={() => router.push("/attendance")}>
-                Xem tất cả <ArrowRightOutlined />
+                {t.common.viewAll} <ArrowRightOutlined />
               </Button>
             }
             className="shadow-xs border-slate-200"
@@ -175,16 +177,16 @@ export function EmployeeDashboard() {
                     {dayjs(rec.date).format("DD/MM/YYYY")}
                   </span>
                   <span className="text-slate-500">
-                    Vào: {rec.checkIn ? dayjs(rec.checkIn).format("HH:mm") : "---"} • Ra:{" "}
+                    {t.attendance.checkInTime}: {rec.checkIn ? dayjs(rec.checkIn).format("HH:mm") : "---"} • {t.attendance.checkOutTime}:{" "}
                     {rec.checkOut ? dayjs(rec.checkOut).format("HH:mm") : "---"}
                   </span>
                   <Tag color={rec.status === "PRESENT" ? "green" : "orange"}>
-                    {rec.status === "PRESENT" ? "Đúng giờ" : "Đi muộn"}
+                    {rec.status === "PRESENT" ? t.attendance.statusOnTime : t.attendance.statusLate}
                   </Tag>
                 </div>
               ))}
               {myHistory.length === 0 && (
-                <div className="py-6 text-center text-xs text-slate-400">Chưa có dữ liệu chấm công</div>
+                <div className="py-6 text-center text-xs text-slate-400">{t.attendance.noRecords}</div>
               )}
             </div>
           </Card>
@@ -192,7 +194,7 @@ export function EmployeeDashboard() {
 
         <Col xs={24} md={12}>
           <Card
-            title={<span className="font-semibold text-slate-700">Danh bạ & Tiện ích nội bộ</span>}
+            title={<span className="font-semibold text-slate-700">{t.dashboard.internalDirectory}</span>}
             className="shadow-xs border-slate-200"
           >
             <div className="grid grid-cols-2 gap-3">
@@ -202,8 +204,8 @@ export function EmployeeDashboard() {
                 className="p-3 border border-slate-200 rounded-xl text-left hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer"
               >
                 <div className="text-base mb-1">👥</div>
-                <div className="font-semibold text-slate-700 text-xs">Danh bạ nhân sự</div>
-                <div className="text-[11px] text-slate-400">Tra cứu thông tin đồng nghiệp</div>
+                <div className="font-semibold text-slate-700 text-xs">{t.dashboard.employeeDirectory}</div>
+                <div className="text-[11px] text-slate-400">{t.dashboard.employeeDirectoryDesc}</div>
               </button>
 
               <button
@@ -212,8 +214,8 @@ export function EmployeeDashboard() {
                 className="p-3 border border-slate-200 rounded-xl text-left hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer"
               >
                 <div className="text-base mb-1">📝</div>
-                <div className="font-semibold text-slate-700 text-xs">Đơn xin nghỉ phép</div>
-                <div className="text-[11px] text-slate-400">Nộp và theo dõi trạng thái duyệt</div>
+                <div className="font-semibold text-slate-700 text-xs">{t.dashboard.leaveRequest}</div>
+                <div className="text-[11px] text-slate-400">{t.dashboard.leaveRequestDesc}</div>
               </button>
 
               <button
@@ -222,8 +224,8 @@ export function EmployeeDashboard() {
                 className="p-3 border border-slate-200 rounded-xl text-left hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer"
               >
                 <div className="text-base mb-1">💵</div>
-                <div className="font-semibold text-slate-700 text-xs">Phiếu lương của tôi</div>
-                <div className="text-[11px] text-slate-400">Tra cứu chi tiết thu nhập</div>
+                <div className="font-semibold text-slate-700 text-xs">{t.dashboard.myPayslips}</div>
+                <div className="text-[11px] text-slate-400">{t.dashboard.myPayslipsDesc}</div>
               </button>
 
               <button
@@ -232,8 +234,8 @@ export function EmployeeDashboard() {
                 className="p-3 border border-slate-200 rounded-xl text-left hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer"
               >
                 <div className="text-base mb-1">🔒</div>
-                <div className="font-semibold text-slate-700 text-xs">Hồ sơ & Bảo mật</div>
-                <div className="text-[11px] text-slate-400">Đổi mật khẩu, xem hồ sơ</div>
+                <div className="font-semibold text-slate-700 text-xs">{t.dashboard.profileSecurity}</div>
+                <div className="text-[11px] text-slate-400">{t.dashboard.profileSecurityDesc}</div>
               </button>
             </div>
           </Card>

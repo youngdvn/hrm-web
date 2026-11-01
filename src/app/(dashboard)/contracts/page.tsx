@@ -24,6 +24,7 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useContracts } from "@/hooks/useContracts";
 import { useAuthStore } from "@/stores/auth.store";
+import { useI18nStore } from "@/stores/i18n.store";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { getMediaUrl } from "@/lib/api-client";
 import {
@@ -41,6 +42,7 @@ const ContractModal = dynamic(
 const { Title, Text } = Typography;
 
 export default function ContractsPage() {
+  const { t } = useI18nStore();
   const { hasRole } = useAuthStore();
   const isHrOrAdmin = hasRole(["ADMIN", "HR"]);
   const isAdmin = hasRole(["ADMIN"]);
@@ -52,9 +54,7 @@ export default function ContractsPage() {
     contracts,
     isLoading,
     createContract,
-    isCreating,
     updateContract,
-    isUpdating,
     deleteContract,
     uploadContractFile,
   } = useContracts();
@@ -80,11 +80,11 @@ export default function ContractsPage() {
   };
 
   const contractTypeMap: Record<ContractType, string> = {
-    PROBATION: "Thử việc",
-    DEFINITE_TERM: "Xác định thời hạn",
-    INDEFINITE_TERM: "Không xác định thời hạn",
-    SEASONAL: "Thời vụ",
-    INTERNSHIP: "Thực tập",
+    PROBATION: t.contract.typeProbation,
+    DEFINITE_TERM: t.contract.typeDefinite,
+    INDEFINITE_TERM: t.contract.typeIndefinite,
+    SEASONAL: t.contract.typeSeasonal,
+    INTERNSHIP: t.contract.typeInternship,
   };
 
   const statusColorMap: Record<ContractStatus, string> = {
@@ -95,15 +95,15 @@ export default function ContractsPage() {
   };
 
   const statusLabelMap: Record<ContractStatus, string> = {
-    ACTIVE: "Đang hiệu lực",
-    DRAFT: "Bản nháp",
-    EXPIRED: "Hết hiệu lực",
-    TERMINATED: "Chấm dứt trước hạn",
+    ACTIVE: t.contract.statusActive,
+    DRAFT: t.contract.statusDraft,
+    EXPIRED: t.contract.statusExpired,
+    TERMINATED: t.contract.statusTerminated,
   };
 
   const columns: ColumnsType<Contract> = [
     {
-      title: "Mã HĐ",
+      title: t.contract.contractNumber,
       dataIndex: "contractNumber",
       key: "contractNumber",
       render: (num) => (
@@ -113,7 +113,7 @@ export default function ContractsPage() {
       ),
     },
     {
-      title: "Nhân viên",
+      title: t.employee.title,
       key: "employee",
       render: (_, r) => (
         <div>
@@ -121,19 +121,21 @@ export default function ContractsPage() {
             {r.employee?.lastName} {r.employee?.firstName}
           </div>
           <div className="text-xs text-slate-400">
-            {r.employee?.employeeCode} • {r.employee?.department?.name || "Chưa phân phòng"}
+            {r.employee?.employeeCode} • {r.employee?.department?.name || "---"}
           </div>
         </div>
       ),
     },
     {
-      title: "Loại hợp đồng",
+      title: t.contract.contractType,
       dataIndex: "contractType",
       key: "contractType",
-      render: (t: ContractType) => <Tag color="geekblue">{contractTypeMap[t] || t}</Tag>,
+      render: (type: ContractType) => (
+        <Tag color="geekblue">{contractTypeMap[type] || type}</Tag>
+      ),
     },
     {
-      title: "Lương cơ bản",
+      title: t.contract.baseSalary,
       dataIndex: "baseSalary",
       key: "baseSalary",
       render: (salary) => (
@@ -143,7 +145,7 @@ export default function ContractsPage() {
       ),
     },
     {
-      title: "Thời hạn",
+      title: t.common.date,
       key: "period",
       render: (_, r) => (
         <div className="text-xs space-y-0.5">
@@ -153,19 +155,19 @@ export default function ContractsPage() {
             {r.endDate ? (
               dayjs(r.endDate).format("DD/MM/YYYY")
             ) : (
-              <span className="text-slate-400">Vô thời hạn</span>
+              <span className="text-slate-400">{t.contract.typeIndefinite}</span>
             )}
           </div>
         </div>
       ),
     },
     {
-      title: "Tệp đính kèm",
+      title: "File",
       key: "fileUrl",
       render: (_, record) => {
         const fileUrl = getMediaUrl(record.fileUrl);
         return (
-          <Space orientation="horizontal" size="small">
+          <Space size="small">
             {fileUrl ? (
               <a
                 href={fileUrl}
@@ -173,10 +175,10 @@ export default function ContractsPage() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200 transition-colors"
               >
-                <FilePdfOutlined className="text-rose-500" /> Xem tệp
+                <FilePdfOutlined className="text-rose-500" /> PDF
               </a>
             ) : (
-              <span className="text-xs text-slate-400">Chưa có tệp</span>
+              <span className="text-xs text-slate-400">---</span>
             )}
 
             {isHrOrAdmin && (
@@ -192,7 +194,6 @@ export default function ContractsPage() {
                   type="text"
                   icon={<UploadOutlined className="text-slate-500" />}
                   className="hover:text-blue-600"
-                  title="Tải lên tệp hợp đồng mới (PDF, DOCX)"
                 />
               </Upload>
             )}
@@ -201,7 +202,7 @@ export default function ContractsPage() {
       },
     },
     {
-      title: "Trạng thái",
+      title: t.common.status,
       dataIndex: "status",
       key: "status",
       render: (st: ContractStatus) => (
@@ -211,7 +212,7 @@ export default function ContractsPage() {
     ...(isHrOrAdmin
       ? [
           {
-            title: "Thao tác",
+            title: t.common.actions,
             key: "actions",
             render: (_: unknown, record: Contract) => (
               <Space>
@@ -222,9 +223,11 @@ export default function ContractsPage() {
                 />
                 {isAdmin && (
                   <Popconfirm
-                    title="Xóa hợp đồng lao động này?"
+                    title={t.common.confirmDelete}
                     onConfirm={() => deleteContract(record.id)}
                     okButtonProps={{ danger: true }}
+                    okText={t.common.delete}
+                    cancelText={t.common.cancel}
                   >
                     <Button type="text" danger icon={<DeleteOutlined />} />
                   </Popconfirm>
@@ -242,9 +245,9 @@ export default function ContractsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <Title level={3} className="!mb-1">
-              Quản lý Hợp đồng Lao động
+              {t.contract.title}
             </Title>
-            <Text type="secondary">Theo dõi các loại hợp đồng, mức lương và thời hạn hiệu lực</Text>
+            <Text type="secondary">{t.contract.subtitle}</Text>
           </div>
 
           {isHrOrAdmin && (
@@ -255,7 +258,7 @@ export default function ContractsPage() {
               onClick={handleOpenCreate}
               className="!shadow-md !shadow-blue-500/20"
             >
-              Tạo hợp đồng mới
+              {t.contract.createContract}
             </Button>
           )}
         </div>
@@ -270,7 +273,6 @@ export default function ContractsPage() {
           />
         </Card>
 
-        {/* Lazy Loaded Contract Modal Form */}
         {modalOpen && (
           <ContractModal
             open={modalOpen}
@@ -280,7 +282,7 @@ export default function ContractsPage() {
               setEditingContract(null);
             }}
             onSubmit={handleSubmit}
-            isLoading={isCreating || isUpdating}
+            isLoading={false}
           />
         )}
       </div>

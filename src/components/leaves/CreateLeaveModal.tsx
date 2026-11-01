@@ -2,23 +2,15 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Modal, Form, Select, DatePicker, Input } from "antd";
-import { Dayjs } from "dayjs";
 import { CreateLeaveInput } from "@/types/leave.types";
+import { leaveFormSchema, LeaveFormValues } from "@/schemas";
+import { useI18nStore } from "@/stores/i18n.store";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-const leaveFormSchema = z.object({
-  leaveType: z.enum(["ANNUAL", "SICK", "UNPAID", "MATERNITY", "BEREAVEMENT", "OTHER"]),
-  dateRange: z
-    .custom<[Dayjs, Dayjs]>()
-    .refine((val) => val && val[0] && val[1], "Vui lòng chọn khoảng thời gian nghỉ"),
-  reason: z.string().min(5, "Lý do nghỉ phép phải có ít nhất 5 ký tự"),
-});
-
-type LeaveFormValues = z.infer<typeof leaveFormSchema>;
+export type { LeaveFormValues };
 
 interface CreateLeaveModalProps {
   open: boolean;
@@ -33,6 +25,8 @@ export default function CreateLeaveModal({
   onSubmit,
   isCreating,
 }: CreateLeaveModalProps) {
+  const { t } = useI18nStore();
+
   const {
     control,
     handleSubmit,
@@ -62,32 +56,34 @@ export default function CreateLeaveModal({
   return (
     <Modal
       open={open}
-      title="Nộp đơn xin nghỉ phép"
+      title={t.leave.createRequest}
       onCancel={onClose}
       onOk={handleSubmit(handleFormSubmit)}
       confirmLoading={isCreating}
       destroyOnClose
+      okText={t.common.save}
+      cancelText={t.common.cancel}
     >
       <Form layout="vertical" className="pt-3">
-        <Form.Item label="Loại nghỉ phép" required>
+        <Form.Item label={t.leave.leaveType} required>
           <Controller
             name="leaveType"
             control={control}
             render={({ field }) => (
               <Select {...field} className="w-full">
-                <Option value="ANNUAL">Phép năm (Trừ quỹ ngày phép)</Option>
-                <Option value="SICK">Nghỉ ốm đau</Option>
-                <Option value="UNPAID">Nghỉ không hưởng lương</Option>
-                <Option value="MATERNITY">Nghỉ chế độ thai sản</Option>
-                <Option value="BEREAVEMENT">Nghỉ hiếu / hỉ</Option>
-                <Option value="OTHER">Lý do khác</Option>
+                <Option value="ANNUAL">{t.leave.typeAnnual}</Option>
+                <Option value="SICK">{t.leave.typeSick}</Option>
+                <Option value="UNPAID">{t.leave.typeUnpaid}</Option>
+                <Option value="MATERNITY">{t.leave.typeMaternity}</Option>
+                <Option value="BEREAVEMENT">{t.leave.typeBereavement}</Option>
+                <Option value="OTHER">{t.leave.typeOther}</Option>
               </Select>
             )}
           />
         </Form.Item>
 
         <Form.Item
-          label="Khoảng thời gian nghỉ"
+          label={t.leave.dateRange}
           required
           validateStatus={errors.dateRange ? "error" : ""}
           help={errors.dateRange?.message}
@@ -96,13 +92,17 @@ export default function CreateLeaveModal({
             name="dateRange"
             control={control}
             render={({ field }) => (
-              <RangePicker {...field} className="w-full" format="YYYY-MM-DD" />
+              <RangePicker
+                {...field}
+                className="w-full"
+                format="YYYY-MM-DD"
+              />
             )}
           />
         </Form.Item>
 
         <Form.Item
-          label="Lý do xin nghỉ"
+          label={t.leave.reason}
           required
           validateStatus={errors.reason ? "error" : ""}
           help={errors.reason?.message}
@@ -111,7 +111,11 @@ export default function CreateLeaveModal({
             name="reason"
             control={control}
             render={({ field }) => (
-              <Input.TextArea {...field} rows={3} placeholder="Mô tả lý do nghỉ phép..." />
+              <Input.TextArea
+                {...field}
+                rows={3}
+                placeholder={t.leave.reason}
+              />
             )}
           />
         </Form.Item>
@@ -119,4 +123,3 @@ export default function CreateLeaveModal({
     </Modal>
   );
 }
-

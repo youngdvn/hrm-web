@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Modal, Input } from "antd";
+import { useI18nStore } from "@/stores/i18n.store";
 
 interface ReviewLeaveModalProps {
   open: boolean;
@@ -16,6 +17,7 @@ export default function ReviewLeaveModal({
   onConfirmReject,
   isReviewing,
 }: ReviewLeaveModalProps) {
+  const { t } = useI18nStore();
   const [rejectionReason, setRejectionReason] = useState("");
 
   const handleOk = async () => {
@@ -27,26 +29,26 @@ export default function ReviewLeaveModal({
   return (
     <Modal
       open={open}
-      title="Từ chối đơn xin nghỉ phép"
+      title={t.leave.reject}
       onCancel={onClose}
       onOk={handleOk}
       confirmLoading={isReviewing}
       okButtonProps={{ danger: true }}
-      okText="Xác nhận từ chối"
+      okText={t.leave.reject}
+      cancelText={t.common.cancel}
       destroyOnClose
     >
       <div className="py-2">
         <label className="block text-xs font-semibold text-slate-600 mb-1">
-          Lý do từ chối (tùy chọn)
+          {t.leave.rejectReason}
         </label>
         <Input.TextArea
           value={rejectionReason}
           onChange={(e) => setRejectionReason(e.target.value)}
           rows={3}
-          placeholder="Nhập lý do không phê duyệt..."
+          placeholder={t.leave.rejectReason}
         />
       </div>
     </Modal>
   );
 }
-

@@ -3,35 +3,25 @@
 import { useState, useEffect } from "react";
 import {
   Card,
-  Row,
-  Col,
-  Button,
   Table,
   Tag,
   Tabs,
   Typography,
-  Input,
   Select,
-  DatePicker,
-  Space,
 } from "antd";
-import {
-  ClockCircleOutlined,
-  LoginOutlined,
-  LogoutOutlined,
-  CalendarOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useAttendance } from "@/hooks/useAttendance";
 import { useAuthStore } from "@/stores/auth.store";
+import { useI18nStore } from "@/stores/i18n.store";
 import { AttendanceRecord, AttendanceStatus } from "@/types/attendance.types";
+import { AttendanceClockCard } from "@/components/attendance/AttendanceClockCard";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 export default function AttendancePage() {
+  const { t, locale } = useI18nStore();
   const { hasRole } = useAuthStore();
   const isManagerOrAdmin = hasRole(["ADMIN", "HR", "MANAGER"]);
 
@@ -45,14 +35,15 @@ export default function AttendancePage() {
 
   useEffect(() => {
     const updateTime = () => {
-      const now = dayjs();
+      const now = dayjs().locale(locale);
       setCurrentTime(now.format("HH:mm:ss"));
-      setCurrentDate(now.format("dddd, DD/MM/YYYY"));
+      const rawDate = now.format("dddd, DD/MM/YYYY");
+      setCurrentDate(rawDate.charAt(0).toUpperCase() + rawDate.slice(1));
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [locale]);
 
   const {
     myHistory,
@@ -89,16 +80,16 @@ export default function AttendancePage() {
   };
 
   const statusLabelMap: Record<AttendanceStatus, string> = {
-    PRESENT: "Đúng giờ",
-    LATE: "Đi muộn",
-    EARLY_LEAVE: "Về sớm",
-    HALF_DAY: "Nửa ngày",
-    ABSENT: "Không đủ công",
+    PRESENT: t.attendance.statusOnTime,
+    LATE: t.attendance.statusLate,
+    EARLY_LEAVE: t.attendance.statusEarlyLeave,
+    HALF_DAY: t.attendance.statusHalfDay,
+    ABSENT: t.attendance.statusAbsent,
   };
 
   const columns: ColumnsType<AttendanceRecord> = [
     {
-      title: "Ngày",
+      title: t.common.date,
       dataIndex: "date",
       key: "date",
       width: 130,
@@ -109,7 +100,7 @@ export default function AttendancePage() {
       ),
     },
     {
-      title: "Giờ Check-in",
+      title: t.attendance.checkInTime,
       key: "checkIn",
       width: 140,
       render: (_, r) => {
@@ -122,7 +113,7 @@ export default function AttendancePage() {
       },
     },
     {
-      title: "Giờ Check-out",
+      title: t.attendance.checkOutTime,
       key: "checkOut",
       width: 140,
       render: (_, r) => {
@@ -135,23 +126,23 @@ export default function AttendancePage() {
       },
     },
     {
-      title: "Số giờ làm",
+      title: t.attendance.workHours,
       key: "workHours",
       width: 120,
       render: (_, r) => {
         const hours = r.workingHours ?? r.workHours;
-        return hours !== null && hours !== undefined ? `${hours} giờ` : "---";
+        return hours !== null && hours !== undefined ? `${hours} ${t.attendance.hoursUnit}` : "---";
       },
     },
     {
-      title: "Tăng ca (OT)",
+      title: t.attendance.overtime,
       key: "overtime",
       width: 125,
       render: (_, r) => {
         const ot = r.overtimeHours ?? r.otHours;
         return ot && ot > 0 ? (
           <Tag color="purple" className="font-semibold !px-2 !py-0.5">
-            +{ot}h OT
+            +{ot}h {t.attendance.overtime}
           </Tag>
         ) : (
           <span className="text-slate-400">---</span>
@@ -159,7 +150,7 @@ export default function AttendancePage() {
       },
     },
     {
-      title: "Trạng thái",
+      title: t.common.status,
       dataIndex: "status",
       key: "status",
       width: 130,
@@ -170,7 +161,7 @@ export default function AttendancePage() {
       ),
     },
     {
-      title: "Ghi chú",
+      title: t.common.notes,
       dataIndex: "notes",
       key: "notes",
       render: (n) => n || <Text type="secondary">---</Text>,
@@ -179,7 +170,7 @@ export default function AttendancePage() {
 
   const companyColumns: ColumnsType<AttendanceRecord> = [
     {
-      title: "Nhân viên",
+      title: t.employee.title,
       key: "employee",
       render: (_, r) => (
         <div>
@@ -187,7 +178,7 @@ export default function AttendancePage() {
             {r.employee?.lastName} {r.employee?.firstName}
           </div>
           <div className="text-xs text-slate-400">
-            {r.employee?.employeeCode} • {r.employee?.department?.name || "Chưa rõ phòng"}
+            {r.employee?.employeeCode} • {r.employee?.department?.name || "---"}
           </div>
         </div>
       ),
@@ -199,79 +190,37 @@ export default function AttendancePage() {
     <div className="space-y-6">
       <div>
         <Title level={3} className="!mb-1">
-          Chấm công & Điểm danh
+          {t.attendance.title}
         </Title>
-        <Text type="secondary">
-          Ghi nhận giờ làm việc hàng ngày và theo dõi lịch sử chấm công
-        </Text>
+        <Text type="secondary">{t.attendance.subtitle}</Text>
       </div>
 
-      {/* Check-In / Check-Out Widget */}
-      <Card className="shadow-xs border-slate-200 bg-gradient-to-r from-blue-50/50 to-indigo-50/40">
-        <Row gutter={[24, 24]} align="middle">
-          <Col xs={24} md={10} className="text-center md:text-left">
-            <div className="text-xs uppercase font-semibold text-slate-500 tracking-wider mb-1">
-              {currentDate || "Đang đồng bộ..."}
-            </div>
-            <div className="text-4xl sm:text-5xl font-black text-slate-800 tracking-tight font-mono">
-              {currentTime || "--:--:--"}
-            </div>
-            <div className="text-xs text-slate-500 mt-2 flex items-center justify-center md:justify-start gap-1.5 flex-wrap">
-              <ClockCircleOutlined /> Ca cố định: <span className="font-semibold text-slate-700">08:30 - 17:30</span> • <Tag color="purple" className="!mr-0 font-medium">Sau 17:30 tính Tăng ca (OT)</Tag>
-            </div>
-          </Col>
+      <AttendanceClockCard
+        currentDate={currentDate}
+        currentTime={currentTime}
+        notes={notes}
+        setNotes={setNotes}
+        isCheckedIn={isCheckedIn}
+        isCheckedOut={isCheckedOut}
+        isCheckingIn={isCheckingIn}
+        isCheckingOut={isCheckingOut}
+        onCheckIn={async () => {
+          await checkIn(notes);
+          setNotes("");
+        }}
+        onCheckOut={async () => {
+          await checkOut(notes);
+          setNotes("");
+        }}
+      />
 
-          <Col xs={24} md={14}>
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-end">
-              <Input
-                placeholder="Ghi chú check-in/out (tùy chọn)..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="max-w-xs"
-              />
-
-              <Button
-                type="primary"
-                size="large"
-                icon={<LoginOutlined />}
-                loading={isCheckingIn}
-                disabled={isCheckedIn}
-                onClick={async () => {
-                  await checkIn(notes);
-                  setNotes("");
-                }}
-                className="!bg-emerald-600 hover:!bg-emerald-700 !h-12 !px-6 !font-semibold !shadow-md !shadow-emerald-600/20"
-              >
-                {isCheckedIn ? "Đã Check-in" : "Check-in"}
-              </Button>
-
-              <Button
-                type="primary"
-                size="large"
-                icon={<LogoutOutlined />}
-                loading={isCheckingOut}
-                disabled={!isCheckedIn || isCheckedOut}
-                onClick={async () => {
-                  await checkOut(notes);
-                  setNotes("");
-                }}
-                className="!h-12 !px-6 !font-semibold !shadow-md !shadow-blue-600/20"
-              >
-                {isCheckedOut ? "Đã Check-out" : "Check-out"}
-              </Button>
-            </div>
-          </Col>
-        </Row>
-      </Card>
-
-      {/* Attendance Tables */}
       <Card className="shadow-xs border-slate-200">
         <Tabs
           defaultActiveKey="my"
           items={[
             {
               key: "my",
-              label: "Lịch sử chấm công của tôi",
+              label: t.attendance.myHistoryTab,
               children: (
                 <Table
                   columns={columns}
@@ -286,12 +235,12 @@ export default function AttendancePage() {
               ? [
                 {
                   key: "company",
-                  label: "Chấm công toàn công ty",
+                  label: t.attendance.companyAttendanceTab,
                   children: (
                     <div className="space-y-4 pt-2">
                       <div className="flex flex-wrap gap-3">
                         <Select
-                          placeholder="Lọc theo trạng thái"
+                          placeholder={t.attendance.filterByStatus}
                           value={statusFilter}
                           onChange={(val) => {
                             setStatusFilter(val);
@@ -300,11 +249,11 @@ export default function AttendancePage() {
                           allowClear
                           className="w-48"
                         >
-                          <Option value="PRESENT">Đúng giờ</Option>
-                          <Option value="LATE">Đi muộn</Option>
-                          <Option value="EARLY_LEAVE">Về sớm</Option>
-                          <Option value="HALF_DAY">Nửa ngày</Option>
-                          <Option value="ABSENT">Vắng mặt</Option>
+                          <Option value="PRESENT">{t.attendance.statusOnTime}</Option>
+                          <Option value="LATE">{t.attendance.statusLate}</Option>
+                          <Option value="EARLY_LEAVE">{t.attendance.statusEarlyLeave}</Option>
+                          <Option value="HALF_DAY">{t.attendance.statusHalfDay}</Option>
+                          <Option value="ABSENT">{t.attendance.statusAbsent}</Option>
                         </Select>
                       </div>
 
@@ -334,4 +283,3 @@ export default function AttendancePage() {
     </div>
   );
 }
-

@@ -23,6 +23,7 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useLeaves } from "@/hooks/useLeaves";
 import { useAuthStore } from "@/stores/auth.store";
+import { useI18nStore } from "@/stores/i18n.store";
 import {
   LeaveRequest,
   LeaveType,
@@ -43,6 +44,7 @@ const ReviewLeaveModal = dynamic(
 const { Title, Text } = Typography;
 
 export default function LeavesPage() {
+  const { t } = useI18nStore();
   const { hasRole } = useAuthStore();
   const isManagerOrAdmin = hasRole(["ADMIN", "HR", "MANAGER"]);
 
@@ -83,12 +85,12 @@ export default function LeavesPage() {
   };
 
   const leaveTypeLabel: Record<LeaveType, string> = {
-    ANNUAL: "Phép năm",
-    SICK: "Nghỉ ốm",
-    UNPAID: "Nghỉ không lương",
-    MATERNITY: "Thai sản",
-    BEREAVEMENT: "Nghỉ hiếu/hỉ",
-    OTHER: "Lý do khác",
+    ANNUAL: t.leave.typeAnnual,
+    SICK: t.leave.typeSick,
+    UNPAID: t.leave.typeUnpaid,
+    MATERNITY: t.leave.typeMaternity,
+    BEREAVEMENT: t.leave.typeBereavement,
+    OTHER: t.leave.typeOther,
   };
 
   const statusColorMap: Record<LeaveStatus, string> = {
@@ -99,15 +101,15 @@ export default function LeavesPage() {
   };
 
   const statusLabelMap: Record<LeaveStatus, string> = {
-    PENDING: "Chờ phê duyệt",
-    APPROVED: "Đã duyệt",
-    REJECTED: "Từ chối",
-    CANCELLED: "Đã hủy",
+    PENDING: t.leave.statusPending,
+    APPROVED: t.leave.statusApproved,
+    REJECTED: t.leave.statusRejected,
+    CANCELLED: t.common.cancel,
   };
 
   const myColumns: ColumnsType<LeaveRequest> = [
     {
-      title: "Loại nghỉ phép",
+      title: t.leave.leaveType,
       dataIndex: "leaveType",
       key: "leaveType",
       render: (type: LeaveType) => <Tag color="blue">{leaveTypeLabel[type] || type}</Tag>,
@@ -125,18 +127,22 @@ export default function LeavesPage() {
       render: (d) => dayjs(d).format("DD/MM/YYYY"),
     },
     {
-      title: "Số ngày",
+      title: t.leave.totalDays,
       dataIndex: "totalDays",
       key: "totalDays",
-      render: (days) => <span className="font-semibold text-slate-800">{days} ngày</span>,
+      render: (days) => (
+        <span className="font-semibold text-slate-800">
+          {days} {t.common.records}
+        </span>
+      ),
     },
     {
-      title: "Lý do",
+      title: t.leave.reason,
       dataIndex: "reason",
       key: "reason",
     },
     {
-      title: "Trạng thái",
+      title: t.common.status,
       dataIndex: "status",
       key: "status",
       render: (st: LeaveStatus) => (
@@ -144,18 +150,19 @@ export default function LeavesPage() {
       ),
     },
     {
-      title: "Thao tác",
+      title: t.common.actions,
       key: "actions",
-      render: (_, record) =>
+      render: (_: unknown, record: LeaveRequest) =>
         record.status === "PENDING" && (
           <Popconfirm
-            title="Hủy đơn xin nghỉ này?"
+            title="Bạn có chắc muốn hủy đơn nghỉ phép này?"
             onConfirm={() => cancelLeave(record.id)}
-            okText="Hủy đơn"
-            cancelText="Đóng"
+            okButtonProps={{ danger: true }}
+            okText={t.common.delete}
+            cancelText={t.common.cancel}
           >
-            <Button type="link" danger size="small" icon={<StopOutlined />}>
-              Hủy
+            <Button size="small" danger icon={<StopOutlined />}>
+              {t.common.cancel}
             </Button>
           </Popconfirm>
         ),
@@ -164,7 +171,7 @@ export default function LeavesPage() {
 
   const companyColumns: ColumnsType<LeaveRequest> = [
     {
-      title: "Nhân viên",
+      title: t.employee.title,
       key: "employee",
       render: (_, r) => (
         <div>
@@ -172,17 +179,45 @@ export default function LeavesPage() {
             {r.employee?.lastName} {r.employee?.firstName}
           </div>
           <div className="text-xs text-slate-400">
-            {r.employee?.employeeCode} • {r.employee?.department?.name || "Chưa rõ phòng"}
+            {r.employee?.employeeCode} • {r.employee?.department?.name || "---"}
           </div>
         </div>
       ),
     },
-    ...myColumns.filter((c) => c.key !== "actions"),
     {
-      title: "Thao tác",
-      key: "companyActions",
-      width: 160,
-      render: (_, record) =>
+      title: t.leave.leaveType,
+      dataIndex: "leaveType",
+      key: "leaveType",
+      render: (type: LeaveType) => <Tag color="blue">{leaveTypeLabel[type] || type}</Tag>,
+    },
+    {
+      title: t.leave.dateRange,
+      key: "dates",
+      render: (_, r) => (
+        <span className="text-xs">
+          {dayjs(r.startDate).format("DD/MM/YYYY")} - {dayjs(r.endDate).format("DD/MM/YYYY")} (
+          {r.totalDays} ngày)
+        </span>
+      ),
+    },
+    {
+      title: t.leave.reason,
+      dataIndex: "reason",
+      key: "reason",
+      ellipsis: true,
+    },
+    {
+      title: t.common.status,
+      dataIndex: "status",
+      key: "status",
+      render: (st: LeaveStatus) => (
+        <Tag color={statusColorMap[st] || "default"}>{statusLabelMap[st] || st}</Tag>
+      ),
+    },
+    {
+      title: t.common.actions,
+      key: "actions",
+      render: (_: unknown, record: LeaveRequest) =>
         record.status === "PENDING" && (
           <Space>
             <Button
@@ -194,7 +229,7 @@ export default function LeavesPage() {
                 handleReviewAction("APPROVED");
               }}
             >
-              Duyệt
+              {t.leave.approve}
             </Button>
             <Button
               danger
@@ -204,7 +239,7 @@ export default function LeavesPage() {
                 setReviewModalOpen(true);
               }}
             >
-              Từ chối
+              {t.leave.reject}
             </Button>
           </Space>
         ),
@@ -216,9 +251,9 @@ export default function LeavesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <Title level={3} className="!mb-1">
-            Quản lý Nghỉ phép
+            {t.leave.title}
           </Title>
-          <Text type="secondary">Nộp đơn xin nghỉ, tra cứu quỹ phép năm và phê duyệt đơn</Text>
+          <Text type="secondary">{t.leave.subtitle}</Text>
         </div>
 
         <Button
@@ -228,7 +263,7 @@ export default function LeavesPage() {
           onClick={() => setCreateModalOpen(true)}
           className="!shadow-md !shadow-blue-500/20"
         >
-          Nộp đơn nghỉ phép
+          {t.leave.createRequest}
         </Button>
       </div>
 
@@ -237,7 +272,7 @@ export default function LeavesPage() {
         <Col xs={24} sm={8}>
           <Card className="shadow-xs border-slate-200">
             <Statistic
-              title={<span className="text-xs font-semibold text-slate-500 uppercase">Tổng ngày phép năm</span>}
+              title={<span className="text-xs font-semibold text-slate-500 uppercase">{t.leave.annualBalance}</span>}
               value={myBalance?.totalDays ?? 12}
               suffix="ngày"
               styles={{ content: { fontWeight: 700, color: "#1e293b" } }}
@@ -248,7 +283,7 @@ export default function LeavesPage() {
         <Col xs={24} sm={8}>
           <Card className="shadow-xs border-slate-200">
             <Statistic
-              title={<span className="text-xs font-semibold text-slate-500 uppercase">Đã sử dụng</span>}
+              title={<span className="text-xs font-semibold text-slate-500 uppercase">{t.leave.usedDays}</span>}
               value={myBalance?.usedDays ?? 0}
               suffix="ngày"
               styles={{ content: { fontWeight: 700, color: "#d97706" } }}
@@ -259,7 +294,7 @@ export default function LeavesPage() {
         <Col xs={24} sm={8}>
           <Card className="shadow-xs border-slate-200">
             <Statistic
-              title={<span className="text-xs font-semibold text-slate-500 uppercase">Ngày phép còn lại</span>}
+              title={<span className="text-xs font-semibold text-slate-500 uppercase">{t.leave.remainingDays}</span>}
               value={myBalance?.remainingDays ?? 12}
               suffix="ngày"
               styles={{ content: { fontWeight: 700, color: "#16a34a" } }}

@@ -6,7 +6,6 @@ import {
   Badge,
   Button,
   Dropdown,
-  List,
   Typography,
   Empty,
   Space,
@@ -24,6 +23,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAuthStore } from "@/stores/auth.store";
+import { useI18nStore } from "@/stores/i18n.store";
 import { AppNotification, NotificationType, SendNotificationPayload } from "@/types/notification.types";
 
 const SendNotificationModal = dynamic(
@@ -51,6 +51,7 @@ const getTypeIcon = (type: NotificationType) => {
 
 export function NotificationDropdown() {
   const router = useRouter();
+  const { t } = useI18nStore();
   const { hasRole } = useAuthStore();
   const isHrOrAdmin = hasRole(["ADMIN", "HR"]);
 
@@ -83,7 +84,7 @@ export function NotificationDropdown() {
     <div className="w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden">
       <div className="p-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-slate-800 text-sm">Thông báo</span>
+          <span className="font-semibold text-slate-800 text-sm">{t.notification.title}</span>
           {unreadCount > 0 && (
             <Badge count={unreadCount} overflowCount={99} className="!text-[11px]" />
           )}
@@ -97,7 +98,7 @@ export function NotificationDropdown() {
               onClick={() => setSendModalOpen(true)}
               className="!text-xs !bg-blue-600 hover:!bg-blue-700 !h-7"
             >
-              Gửi tin
+              {t.notification.sendBtn}
             </Button>
           )}
 
@@ -110,7 +111,7 @@ export function NotificationDropdown() {
               onClick={() => markAllAsRead()}
               className="!p-0 !text-xs !text-blue-600 hover:!text-blue-700"
             >
-              Đã đọc
+              {t.notification.markAllRead}
             </Button>
           )}
         </Space>
@@ -118,51 +119,48 @@ export function NotificationDropdown() {
 
       <div className="max-h-[380px] overflow-y-auto">
         {notifications.length > 0 ? (
-          <List
-            itemLayout="horizontal"
-            dataSource={notifications}
-            renderItem={(item) => (
-              <List.Item
+          <div className="divide-y divide-slate-100">
+            {notifications.map((item) => (
+              <div
+                key={item.id}
                 onClick={() => handleNotificationClick(item)}
-                className={`!px-3.5 !py-3 cursor-pointer transition-colors border-b border-slate-50 last:border-b-0 hover:bg-slate-50 ${
+                className={`px-3.5 py-3 cursor-pointer transition-colors hover:bg-slate-50 flex items-start gap-3 w-full ${
                   !item.isRead ? "bg-blue-50/30" : ""
                 }`}
               >
-                <div className="flex items-start gap-3 w-full">
-                  <div className="mt-0.5 p-2 rounded-lg bg-slate-100 text-sm">
-                    {getTypeIcon(item.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <span
-                        className={`text-xs truncate ${
-                          !item.isRead
-                            ? "font-semibold text-slate-900"
-                            : "font-medium text-slate-700"
-                        }`}
-                      >
-                        {item.title}
-                      </span>
-                      {!item.isRead && (
-                        <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-500 line-clamp-2 !mb-1 leading-relaxed">
-                      {item.message}
-                    </p>
-                    <Text type="secondary" className="text-[10px]">
-                      {dayjs(item.createdAt).fromNow()}
-                    </Text>
-                  </div>
+                <div className="mt-0.5 p-2 rounded-lg bg-slate-100 text-sm shrink-0">
+                  {getTypeIcon(item.type)}
                 </div>
-              </List.Item>
-            )}
-          />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1 mb-0.5">
+                    <span
+                      className={`text-xs truncate ${
+                        !item.isRead
+                          ? "font-semibold text-slate-900"
+                          : "font-medium text-slate-700"
+                      }`}
+                    >
+                      {item.title}
+                    </span>
+                    {!item.isRead && (
+                      <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 line-clamp-2 !mb-1 leading-relaxed">
+                    {item.message}
+                  </p>
+                  <Text type="secondary" className="text-[10px]">
+                    {dayjs(item.createdAt).fromNow()}
+                  </Text>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="py-8">
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={<span className="text-xs text-slate-400">Không có thông báo mới</span>}
+              description={<span className="text-xs text-slate-400">{t.notification.noNotifications}</span>}
             />
           </div>
         )}

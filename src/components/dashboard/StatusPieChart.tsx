@@ -48,14 +48,14 @@ export function StatusPieChart({ statusCounts }: StatusPieChartProps) {
                   <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                 ))}
               </Pie>
-              <RechartsTooltip formatter={(val) => [`${val} người`, "Số lượng"]} />
+              <RechartsTooltip formatter={(val) => [`${val} ${t.common.records}`, t.employee.title]} />
               <Legend verticalAlign="bottom" height={36} />
             </PieChart>
           </ResponsiveContainer>
         </div>
       ) : (
         <div className="h-72 flex items-center justify-center text-slate-400">
-          Chưa có dữ liệu trạng thái
+          {t.common.noData}
         </div>
       )}
     </Card>

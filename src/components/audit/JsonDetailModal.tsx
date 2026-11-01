@@ -2,6 +2,7 @@
 
 import { Modal, Button } from "antd";
 import { AuditLog } from "@/types/audit.types";
+import { useI18nStore } from "@/stores/i18n.store";
 
 interface JsonDetailModalProps {
   open: boolean;
@@ -14,14 +15,16 @@ export default function JsonDetailModal({
   log,
   onClose,
 }: JsonDetailModalProps) {
+  const { t } = useI18nStore();
+
   return (
     <Modal
       open={open}
-      title="Chi tiết Nhật ký Kiểm toán"
+      title={t.audit.details}
       onCancel={onClose}
       footer={[
         <Button key="close" type="primary" onClick={onClose}>
-          Đóng
+          {t.common.close}
         </Button>,
       ]}
       width={650}

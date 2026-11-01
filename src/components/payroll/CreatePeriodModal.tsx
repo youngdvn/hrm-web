@@ -2,23 +2,15 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Modal, Form, Input, DatePicker, Row, Col } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { CreatePeriodInput } from "@/types/payroll.types";
+import { periodFormSchema, PeriodFormValues } from "@/schemas";
+import { useI18nStore } from "@/stores/i18n.store";
 
 const { RangePicker } = DatePicker;
 
-const periodFormSchema = z.object({
-  name: z.string().min(2, "Tên kỳ lương tối thiểu 2 ký tự"),
-  month: z.number().int().min(1).max(12),
-  year: z.number().int().min(2020).max(2100),
-  dateRange: z
-    .custom<[Dayjs, Dayjs]>()
-    .refine((val) => val && val[0] && val[1], "Vui lòng chọn thời gian chu kỳ tính lương"),
-});
-
-type PeriodFormValues = z.infer<typeof periodFormSchema>;
+export type { PeriodFormValues };
 
 interface CreatePeriodModalProps {
   open: boolean;
@@ -33,6 +25,8 @@ export default function CreatePeriodModal({
   onSubmit,
   isCreating,
 }: CreatePeriodModalProps) {
+  const { t } = useI18nStore();
+
   const {
     control,
     handleSubmit,
@@ -64,15 +58,17 @@ export default function CreatePeriodModal({
   return (
     <Modal
       open={open}
-      title="Tạo kỳ tính lương mới"
+      title={t.payroll.createPeriod}
       onCancel={onClose}
       onOk={handleSubmit(handleFormSubmit)}
       confirmLoading={isCreating}
-      destroyOnHidden
+      destroyOnClose
+      okText={t.common.save}
+      cancelText={t.common.cancel}
     >
       <Form layout="vertical" className="pt-3">
         <Form.Item
-          label="Tên kỳ lương"
+          label={t.payroll.periodName}
           required
           validateStatus={errors.name ? "error" : ""}
           help={errors.name?.message}
@@ -81,43 +77,30 @@ export default function CreatePeriodModal({
             name="name"
             control={control}
             render={({ field }) => (
-              <Input {...field} placeholder="Kỳ lương Tháng 10/2026" />
+              <Input {...field} placeholder="Kỳ lương Tháng 11/2026" />
             )}
           />
         </Form.Item>
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item label="Tháng" required>
+            <Form.Item label={t.payroll.month} required>
               <Controller
                 name="month"
                 control={control}
                 render={({ field }) => (
-                  <Input
-                    type="number"
-                    min={1}
-                    max={12}
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
+                  <Input {...field} type="number" min={1} max={12} />
                 )}
               />
             </Form.Item>
           </Col>
-
           <Col span={12}>
-            <Form.Item label="Năm" required>
+            <Form.Item label={t.payroll.year} required>
               <Controller
                 name="year"
                 control={control}
                 render={({ field }) => (
-                  <Input
-                    type="number"
-                    min={2020}
-                    max={2100}
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
+                  <Input {...field} type="number" min={2020} max={2100} />
                 )}
               />
             </Form.Item>
@@ -125,7 +108,7 @@ export default function CreatePeriodModal({
         </Row>
 
         <Form.Item
-          label="Khoảng thời gian tính công"
+          label={t.attendance.title}
           required
           validateStatus={errors.dateRange ? "error" : ""}
           help={errors.dateRange?.message}
@@ -134,7 +117,11 @@ export default function CreatePeriodModal({
             name="dateRange"
             control={control}
             render={({ field }) => (
-              <RangePicker {...field} className="w-full" format="YYYY-MM-DD" />
+              <RangePicker
+                {...field}
+                className="w-full"
+                format="YYYY-MM-DD"
+              />
             )}
           />
         </Form.Item>
@@ -142,4 +129,3 @@ export default function CreatePeriodModal({
     </Modal>
   );
 }
-

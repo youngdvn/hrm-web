@@ -40,6 +40,11 @@ export interface Employee {
   positionId?: string | null;
   managerId?: string | null;
   userId?: string | null;
+  user?: {
+    id: string;
+    email: string;
+    isActive?: boolean;
+  } | null;
   department?: Department | null;
   position?: Position | null;
   manager?: {
@@ -76,6 +81,9 @@ export interface CreateEmployeeInput {
   departmentId?: string;
   positionId?: string;
   managerId?: string;
+  createAccount?: boolean;
+  role?: "EMPLOYEE" | "HR" | "MANAGER" | "ADMIN";
+  initialPassword?: string;
 }
 
 export interface UpdateEmployeeInput extends Partial<Omit<CreateEmployeeInput, "employeeCode">> { }

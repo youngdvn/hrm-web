@@ -165,7 +165,8 @@ export function useChat(activePartnerId?: string, search?: string) {
       return res.data || [];
     },
     enabled: isAuthenticated,
-    refetchInterval: 30000, // Có socket realtime nên giảm tần suất polling
+    refetchInterval: 10000,
+    refetchOnMount: "always",
   });
 
   // Query: Danh sách tin nhắn đối tác đang chọn

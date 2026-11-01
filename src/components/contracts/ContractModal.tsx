@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {
   Modal,
   Form,
@@ -17,28 +16,12 @@ import {
 import dayjs, { Dayjs } from "dayjs";
 import { useEmployees } from "@/hooks/useEmployees";
 import { Contract, CreateContractInput } from "@/types/contract.types";
+import { contractFormSchema, ContractFormValues } from "@/schemas";
+import { useI18nStore } from "@/stores/i18n.store";
 
 const { Option } = Select;
 
-const contractFormSchema = z.object({
-  contractNumber: z.string().min(3, "Số hợp đồng tối thiểu 3 ký tự"),
-  employeeId: z.string().min(1, "Vui lòng chọn nhân viên"),
-  contractType: z.enum([
-    "PROBATION",
-    "DEFINITE_TERM",
-    "INDEFINITE_TERM",
-    "SEASONAL",
-    "INTERNSHIP",
-  ]),
-  startDate: z.custom<Dayjs>((val) => !!val, "Vui lòng chọn ngày bắt đầu"),
-  endDate: z.custom<Dayjs | null>().optional(),
-  baseSalary: z.number().positive("Lương cơ bản phải lớn hơn 0"),
-  allowance: z.number().nonnegative("Phụ cấp phải >= 0"),
-  status: z.enum(["DRAFT", "ACTIVE", "EXPIRED", "TERMINATED"]),
-  notes: z.string().optional(),
-});
-
-type ContractFormValues = z.infer<typeof contractFormSchema>;
+export type { ContractFormValues };
 
 interface ContractModalProps {
   open: boolean;
@@ -55,6 +38,7 @@ export default function ContractModal({
   onSubmit,
   isLoading,
 }: ContractModalProps) {
+  const { t } = useI18nStore();
   const { employees } = useEmployees({ limit: 100 });
 
   const {
@@ -117,18 +101,20 @@ export default function ContractModal({
   return (
     <Modal
       open={open}
-      title={contract ? "Chỉnh sửa hợp đồng" : "Tạo hợp đồng lao động mới"}
+      title={contract ? t.contract.editContract : t.contract.createContract}
       onCancel={onClose}
       onOk={handleSubmit(handleFormSubmit)}
       confirmLoading={isLoading}
       width={680}
       destroyOnClose
+      okText={t.common.save}
+      cancelText={t.common.cancel}
     >
       <Form layout="vertical" className="pt-3">
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              label="Số Hợp đồng"
+              label={t.contract.contractNumber}
               required
               validateStatus={errors.contractNumber ? "error" : ""}
               help={errors.contractNumber?.message}

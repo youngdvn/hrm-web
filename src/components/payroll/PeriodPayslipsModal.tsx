@@ -6,6 +6,7 @@ import { DollarCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { request } from "@/lib/api-client";
 import { PayrollPeriod, Payslip } from "@/types/payroll.types";
+import { useI18nStore } from "@/stores/i18n.store";
 
 interface PeriodPayslipsModalProps {
   open: boolean;
@@ -21,6 +22,7 @@ export default function PeriodPayslipsModal({
   period,
   onClose,
 }: PeriodPayslipsModalProps) {
+  const { t } = useI18nStore();
   const { data: periodPayslips = [], isLoading: isLoadingPayslips } = useQuery<Payslip[]>({
     queryKey: ["period-payslips", period?.id],
     queryFn: async () => {
@@ -117,7 +119,7 @@ export default function PeriodPayslipsModal({
       onCancel={onClose}
       footer={[
         <Button key="close" type="primary" onClick={onClose}>
-          Đóng
+          {t.common.close}
         </Button>,
       ]}
       width={1000}

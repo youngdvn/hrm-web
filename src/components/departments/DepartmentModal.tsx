@@ -3,21 +3,12 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Modal, Form, Input } from "antd";
 import { Department } from "@/types/employee.types";
+import { departmentSchema, DepartmentFormValues } from "@/schemas";
+import { useI18nStore } from "@/stores/i18n.store";
 
-const departmentSchema = z.object({
-  code: z
-    .string()
-    .min(2, "Mã phòng ban tối thiểu 2 ký tự")
-    .max(10, "Mã phòng ban tối đa 10 ký tự")
-    .transform((val) => val.trim().toUpperCase()),
-  name: z.string().min(2, "Tên phòng ban tối thiểu 2 ký tự").transform((val) => val.trim()),
-  description: z.string().optional(),
-});
-
-export type DepartmentFormValues = z.infer<typeof departmentSchema>;
+export type { DepartmentFormValues };
 
 interface DepartmentModalProps {
   open: boolean;
@@ -34,6 +25,8 @@ export default function DepartmentModal({
   onSubmit,
   isLoading,
 }: DepartmentModalProps) {
+  const { t } = useI18nStore();
+
   const {
     control,
     handleSubmit,
@@ -67,15 +60,17 @@ export default function DepartmentModal({
   return (
     <Modal
       open={open}
-      title={department ? "Chỉnh sửa phòng ban" : "Thêm phòng ban mới"}
+      title={department ? t.department.edit : t.department.addNew}
       onCancel={onClose}
       onOk={handleSubmit(onSubmit)}
       confirmLoading={isLoading}
       destroyOnClose
+      okText={t.common.save}
+      cancelText={t.common.cancel}
     >
       <Form layout="vertical" className="pt-3">
         <Form.Item
-          label="Mã phòng ban"
+          label={t.department.code}
           required
           validateStatus={errors.code ? "error" : ""}
           help={errors.code?.message}
@@ -84,13 +79,13 @@ export default function DepartmentModal({
             name="code"
             control={control}
             render={({ field }) => (
-              <Input {...field} placeholder="IT, HR, MKT..." disabled={!!department} />
+              <Input {...field} placeholder="IT, HR, FIN..." disabled={!!department} />
             )}
           />
         </Form.Item>
 
         <Form.Item
-          label="Tên phòng ban"
+          label={t.department.name}
           required
           validateStatus={errors.name ? "error" : ""}
           help={errors.name?.message}
@@ -99,17 +94,17 @@ export default function DepartmentModal({
             name="name"
             control={control}
             render={({ field }) => (
-              <Input {...field} placeholder="Phòng Công nghệ Thông tin" />
+              <Input {...field} placeholder={t.department.name} />
             )}
           />
         </Form.Item>
 
-        <Form.Item label="Mô tả">
+        <Form.Item label={t.department.description}>
           <Controller
             name="description"
             control={control}
             render={({ field }) => (
-              <Input.TextArea {...field} placeholder="Chức năng, nhiệm vụ phòng ban..." rows={3} />
+              <Input.TextArea {...field} placeholder={t.department.description} rows={3} />
             )}
           />
         </Form.Item>
@@ -117,4 +112,3 @@ export default function DepartmentModal({
     </Modal>
   );
 }
-

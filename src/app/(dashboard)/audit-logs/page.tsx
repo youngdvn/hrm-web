@@ -19,6 +19,7 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
+import { useI18nStore } from "@/stores/i18n.store";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { AuditLog } from "@/types/audit.types";
 
@@ -30,6 +31,7 @@ const JsonDetailModal = dynamic(
 const { Title, Text } = Typography;
 
 export default function AuditLogsPage() {
+  const { t } = useI18nStore();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [action, setAction] = useState<string | undefined>(undefined);
@@ -58,7 +60,7 @@ export default function AuditLogsPage() {
 
   const columns: ColumnsType<AuditLog> = [
     {
-      title: "Thời gian",
+      title: t.audit.timestamp,
       dataIndex: "createdAt",
       key: "createdAt",
       width: 170,
@@ -69,23 +71,23 @@ export default function AuditLogsPage() {
       ),
     },
     {
-      title: "Người thực hiện",
+      title: t.audit.user,
       key: "user",
       render: (_, r) => (
         <div>
-          <div className="font-medium text-slate-800">{r.user?.fullName || "Hệ thống"}</div>
+          <div className="font-medium text-slate-800">{r.user?.fullName || "System"}</div>
           <div className="text-xs text-slate-400">{r.user?.email || "System"}</div>
         </div>
       ),
     },
     {
-      title: "Hành động (Action)",
+      title: t.audit.action,
       dataIndex: "action",
       key: "action",
       render: (act) => <Tag color={getActionColor(act)}>{act}</Tag>,
     },
     {
-      title: "Đối tượng (Entity)",
+      title: t.audit.entity,
       dataIndex: "entity",
       key: "entity",
       render: (ent, r) => (
@@ -95,13 +97,13 @@ export default function AuditLogsPage() {
       ),
     },
     {
-      title: "Địa chỉ IP",
+      title: t.audit.ipAddress,
       dataIndex: "ipAddress",
       key: "ipAddress",
       render: (ip) => <span className="font-mono text-xs">{ip || "---"}</span>,
     },
     {
-      title: "Chi tiết",
+      title: t.audit.details,
       key: "details",
       width: 90,
       render: (_, r) => (
@@ -123,17 +125,15 @@ export default function AuditLogsPage() {
       <div className="space-y-6">
         <div>
           <Title level={3} className="!mb-1 flex items-center gap-2">
-            <SafetyCertificateOutlined className="text-blue-600" /> Nhật ký Kiểm toán Hệ thống
+            <SafetyCertificateOutlined className="text-blue-600" /> {t.audit.title}
           </Title>
-          <Text type="secondary">
-            Ghi nhận toàn bộ thao tác bảo mật, đăng nhập và thay đổi dữ liệu của người dùng
-          </Text>
+          <Text type="secondary">{t.audit.subtitle}</Text>
         </div>
 
         <Card className="shadow-xs border-slate-200">
           <div className="flex flex-wrap gap-3 mb-4">
             <Input
-              placeholder="Lọc theo hành động (VD: AUTH_LOGIN)..."
+              placeholder="Filter by action (e.g. AUTH_LOGIN)..."
               value={action}
               onChange={(e) => {
                 setAction(e.target.value || undefined);
@@ -144,7 +144,7 @@ export default function AuditLogsPage() {
             />
 
             <Input
-              placeholder="Lọc theo thực thể (VD: Employee)..."
+              placeholder="Filter by entity (e.g. Employee)..."
               value={entity}
               onChange={(e) => {
                 setEntity(e.target.value || undefined);
@@ -158,7 +158,7 @@ export default function AuditLogsPage() {
               icon={<ReloadOutlined spin={isFetching} />}
               onClick={() => refetch()}
             >
-              Làm mới
+              {t.common.reset}
             </Button>
           </div>
 

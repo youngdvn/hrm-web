@@ -13,7 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <RoleGuard>
-      <Layout className="min-h-screen">
+      <Layout className="h-screen">
         <Sidebar collapsed={collapsed} onCollapse={setCollapsed} />
         <Layout className="flex flex-col min-h-screen bg-slate-50">
           <Header collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />

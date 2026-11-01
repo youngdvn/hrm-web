@@ -117,6 +117,17 @@ export function EmployeeDetailModal({ open, onClose, employee }: EmployeeDetailM
               <HomeOutlined className="text-slate-400" /> {employee.address || "---"}
             </span>
           </Descriptions.Item>
+
+          <Descriptions.Item label="Tài khoản hệ thống" span={2}>
+            {employee.userId || employee.user ? (
+              <div className="flex items-center gap-2">
+                <Tag color="green">Đã kích hoạt</Tag>
+                <span className="text-xs text-slate-600">Đăng nhập bằng email: <b>{employee.email}</b></span>
+              </div>
+            ) : (
+              <Tag color="default">Chưa liên kết tài khoản</Tag>
+            )}
+          </Descriptions.Item>
         </Descriptions>
       </div>
     </Modal>

@@ -58,10 +58,16 @@ export function useEmployees(params?: EmployeeFilterParams) {
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
-    onSuccess: () => {
-      message.success(t.employee.createSuccess);
+    onSuccess: (data) => {
+      const initPass = (data as any)?.initialPassword;
+      if (initPass) {
+        message.success(`Tạo nhân viên thành công! Mật khẩu mặc định: ${initPass}`, 6);
+      } else {
+        message.success(t.employee.createSuccess);
+      }
       queryClient.invalidateQueries({ queryKey: employeeQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: employeeQueryKeys.dashboardStats });
+      queryClient.invalidateQueries({ queryKey: ["chat"] });
     },
     onError: async (err) => {
       const errMsg = await parseApiError(err);
@@ -79,6 +85,7 @@ export function useEmployees(params?: EmployeeFilterParams) {
       message.success(t.employee.updateSuccess);
       queryClient.invalidateQueries({ queryKey: employeeQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: employeeQueryKeys.dashboardStats });
+      queryClient.invalidateQueries({ queryKey: ["chat"] });
     },
     onError: async (err) => {
       const errMsg = await parseApiError(err);
@@ -96,6 +103,7 @@ export function useEmployees(params?: EmployeeFilterParams) {
       message.success(t.employee.deleteSuccess);
       queryClient.invalidateQueries({ queryKey: employeeQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: employeeQueryKeys.dashboardStats });
+      queryClient.invalidateQueries({ queryKey: ["chat"] });
     },
     onError: async (err) => {
       const errMsg = await parseApiError(err);
