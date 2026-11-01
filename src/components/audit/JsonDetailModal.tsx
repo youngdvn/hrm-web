@@ -37,7 +37,7 @@ export default function JsonDetailModal({
             <span className="text-slate-500 break-all">{log.userAgent || "---"}</span>
           </div>
           <div>
-            <span className="font-semibold text-slate-600">Dữ liệu chi tiết (Payload):</span>
+            <span className="font-semibold text-slate-600">{t.audit.detailsPayload}</span>
             <pre className="mt-1 p-3 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-[11px]">
               {JSON.stringify(log.details || {}, null, 2)}
             </pre>

@@ -35,7 +35,7 @@ export default function PeriodPayslipsModal({
 
   const payslipColumns: ColumnsType<Payslip> = [
     {
-      title: "Nhân viên",
+      title: t.employee.title,
       key: "employee",
       render: (_, r) => (
         <div>
@@ -49,46 +49,46 @@ export default function PeriodPayslipsModal({
       ),
     },
     {
-      title: "Lương cơ bản",
+      title: t.contract.baseSalary,
       dataIndex: "baseSalary",
       key: "baseSalary",
       render: (v) => formatVnd(v),
     },
     {
-      title: "Công chuẩn / Thực tế",
+      title: t.payroll.workDaysStandardActual,
       key: "workDays",
       render: (_, r) => (
         <span className="text-xs">
-          <b>{r.actualWorkDays}</b> / {r.standardWorkDays} ngày
+          <b>{r.actualWorkDays}</b> / {r.standardWorkDays} {t.leave.daysUnit}
         </span>
       ),
     },
     {
-      title: "Lương thực tế",
+      title: t.payroll.actualSalary,
       dataIndex: "actualSalary",
       key: "actualSalary",
       render: (v) => formatVnd(v),
     },
     {
-      title: "Phụ cấp",
+      title: t.contract.allowance,
       dataIndex: "allowance",
       key: "allowance",
       render: (v) => formatVnd(v),
     },
     {
-      title: "Trừ BH (10.5%)",
+      title: t.payroll.insuranceDeduction,
       dataIndex: "insuranceDeduction",
       key: "insuranceDeduction",
       render: (v) => <span className="text-rose-600">-{formatVnd(v)}</span>,
     },
     {
-      title: "Thuế TNCN",
+      title: t.payroll.taxDeduction,
       dataIndex: "taxDeduction",
       key: "taxDeduction",
       render: (v) => <span className="text-rose-600">-{formatVnd(v)}</span>,
     },
     {
-      title: "Lương NET",
+      title: t.payroll.netSalary,
       dataIndex: "netSalary",
       key: "netSalary",
       render: (v) => (
@@ -98,7 +98,7 @@ export default function PeriodPayslipsModal({
       ),
     },
     {
-      title: "Trạng thái",
+      title: t.common.status,
       dataIndex: "status",
       key: "status",
       render: (st) => (
@@ -112,7 +112,7 @@ export default function PeriodPayslipsModal({
       open={open}
       title={
         <span className="flex items-center gap-2">
-          <DollarCircleOutlined className="text-emerald-500" /> Bảng lương chi tiết:{" "}
+          <DollarCircleOutlined className="text-emerald-500" /> {t.payroll.detailedPayslipsTitle}:{" "}
           {period?.name}
         </span>
       }

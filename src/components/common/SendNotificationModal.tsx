@@ -105,10 +105,10 @@ export default function SendNotificationModal({
             onChange={(val) => setNotifType(val)}
             className="w-full"
           >
-            <Option value="GENERAL">Thông báo chung</Option>
-            <Option value="LEAVE_STATUS">Cập nhật Nghỉ phép</Option>
-            <Option value="PAYROLL_PUBLISHED">Thông báo Bảng lương</Option>
-            <Option value="CONTRACT_EXPIRING">Nhắc nhở Hợp đồng</Option>
+            <Option value="GENERAL">{t.notification.typeGeneral}</Option>
+            <Option value="LEAVE_STATUS">{t.notification.typeLeave}</Option>
+            <Option value="PAYROLL_PUBLISHED">{t.notification.typePayroll}</Option>
+            <Option value="CONTRACT_EXPIRING">{t.notification.typeContract}</Option>
           </Select>
         </Form.Item>
 

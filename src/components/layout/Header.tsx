@@ -44,7 +44,7 @@ export function Header({ collapsed, onToggle }: HeaderProps) {
       disabled: true,
       label: (
         <div className="py-1">
-          <div className="font-semibold text-slate-800">{user?.fullName || "Người dùng"}</div>
+          <div className="font-semibold text-slate-800">{user?.fullName || t.common.user}</div>
           <div className="text-xs text-slate-400">{user?.email}</div>
         </div>
       ),

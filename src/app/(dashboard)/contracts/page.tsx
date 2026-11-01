@@ -149,9 +149,9 @@ export default function ContractsPage() {
       key: "period",
       render: (_, r) => (
         <div className="text-xs space-y-0.5">
-          <div>Từ: {dayjs(r.startDate).format("DD/MM/YYYY")}</div>
+          <div>{t.contract.from}: {dayjs(r.startDate).format("DD/MM/YYYY")}</div>
           <div>
-            Đến:{" "}
+            {t.contract.to}:{" "}
             {r.endDate ? (
               dayjs(r.endDate).format("DD/MM/YYYY")
             ) : (
@@ -162,7 +162,7 @@ export default function ContractsPage() {
       ),
     },
     {
-      title: "File",
+      title: t.contract.fileAttachment,
       key: "fileUrl",
       render: (_, record) => {
         const fileUrl = getMediaUrl(record.fileUrl);

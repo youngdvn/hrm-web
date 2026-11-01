@@ -76,8 +76,8 @@ export default function PayrollPage() {
     DRAFT: { label: t.payroll.statusDraft, color: "default" },
     OPEN: { label: t.payroll.statusOpen, color: "blue" },
     PROCESSING: { label: t.payroll.statusProcessing, color: "processing" },
-    CALCULATED: { label: "Đã tính toán", color: "warning" },
-    PAID: { label: "Đã thanh toán", color: "cyan" },
+    CALCULATED: { label: t.payroll.statusCalculated, color: "warning" },
+    PAID: { label: t.payroll.statusPaid, color: "cyan" },
     CLOSED: { label: t.payroll.statusClosed, color: "success" },
   };
 
@@ -106,7 +106,7 @@ export default function PayrollPage() {
       },
     },
     {
-      title: "Số phiếu lương",
+      title: t.payroll.payslipCount,
       key: "count",
       render: (_, r) => (
         <span>
@@ -132,7 +132,7 @@ export default function PayrollPage() {
 
           {r.status !== "CLOSED" && (
             <Popconfirm
-              title="Tính toán bảng lương toàn thể nhân viên cho kỳ này?"
+              title={t.payroll.confirmCalculate}
               onConfirm={() => calculatePeriod({ periodId: r.id })}
               okText={t.payroll.calculate}
               cancelText={t.common.cancel}
@@ -151,7 +151,7 @@ export default function PayrollPage() {
 
           {r.status === "CALCULATED" && (
             <Popconfirm
-              title="Chốt kỳ lương và gửi phiếu lương cho toàn thể nhân viên?"
+              title={t.payroll.confirmClose}
               onConfirm={() => closePeriod(r.id)}
               okText={t.payroll.closePeriod}
               cancelText={t.common.cancel}
@@ -186,13 +186,13 @@ export default function PayrollPage() {
       ),
     },
     {
-      title: "Lương chuẩn",
+      title: t.payroll.standardSalary,
       dataIndex: "standardSalary",
       key: "standardSalary",
       render: (v) => formatVnd(v),
     },
     {
-      title: "Lương thực tế",
+      title: t.payroll.actualSalary,
       dataIndex: "actualSalary",
       key: "actualSalary",
       render: (v) => formatVnd(v),
@@ -204,19 +204,19 @@ export default function PayrollPage() {
       render: (v) => (v > 0 ? <span className="text-emerald-600">+{formatVnd(v)}</span> : "---"),
     },
     {
-      title: "Bảo hiểm",
+      title: t.payroll.insuranceDeduction,
       dataIndex: "insuranceDeduction",
       key: "insuranceDeduction",
       render: (v) => <span className="text-rose-600">-{formatVnd(v)}</span>,
     },
     {
-      title: "Thuế TNCN",
+      title: t.payroll.taxDeduction,
       dataIndex: "taxDeduction",
       key: "taxDeduction",
       render: (v) => <span className="text-rose-600">-{formatVnd(v)}</span>,
     },
     {
-      title: "Lương NET",
+      title: t.payroll.netSalary,
       dataIndex: "netSalary",
       key: "netSalary",
       render: (v) => (
@@ -268,7 +268,7 @@ export default function PayrollPage() {
               ? [
                 {
                   key: "periods",
-                  label: "Danh sách các kỳ tính lương",
+                  label: t.payroll.periodListTab,
                   children: (
                     <Table
                       columns={periodColumns}
@@ -283,7 +283,7 @@ export default function PayrollPage() {
               : []),
             {
               key: "my",
-              label: "Phiếu lương của tôi",
+              label: t.payroll.myPayslipsTab,
               children: (
                 <Table
                   columns={myPayslipColumns}

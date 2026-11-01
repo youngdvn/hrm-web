@@ -35,7 +35,7 @@ export default function CreatePeriodModal({
   } = useForm<PeriodFormValues>({
     resolver: zodResolver(periodFormSchema),
     defaultValues: {
-      name: `Kỳ lương Tháng ${dayjs().format("M/YYYY")}`,
+      name: `${t.payroll.periodMonthPrefix} ${dayjs().format("M/YYYY")}`,
       month: dayjs().month() + 1,
       year: dayjs().year(),
       dateRange: [dayjs().startOf("month"), dayjs().endOf("month")],
@@ -77,7 +77,7 @@ export default function CreatePeriodModal({
             name="name"
             control={control}
             render={({ field }) => (
-              <Input {...field} placeholder="Kỳ lương Tháng 11/2026" />
+              <Input {...field} placeholder={`${t.payroll.periodMonthPrefix} ${dayjs().format("M/YYYY")}`} />
             )}
           />
         </Form.Item>
@@ -108,7 +108,7 @@ export default function CreatePeriodModal({
         </Row>
 
         <Form.Item
-          label={t.attendance.title}
+          label={t.payroll.periodDateRange}
           required
           validateStatus={errors.dateRange ? "error" : ""}
           help={errors.dateRange?.message}

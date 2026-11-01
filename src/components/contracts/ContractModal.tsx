@@ -131,7 +131,7 @@ export default function ContractModal({
 
           <Col span={12}>
             <Form.Item
-              label="Nhân viên"
+              label={t.employee.title}
               required
               validateStatus={errors.employeeId ? "error" : ""}
               help={errors.employeeId?.message}
@@ -142,7 +142,7 @@ export default function ContractModal({
                 render={({ field }) => (
                   <Select
                     {...field}
-                    placeholder="Chọn nhân viên"
+                    placeholder={t.employee.title}
                     showSearch
                     optionFilterProp="children"
                   >
@@ -160,17 +160,17 @@ export default function ContractModal({
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item label="Loại hợp đồng" required>
+            <Form.Item label={t.contract.contractType} required>
               <Controller
                 name="contractType"
                 control={control}
                 render={({ field }) => (
                   <Select {...field} className="w-full">
-                    <Option value="PROBATION">Hợp đồng thử việc</Option>
-                    <Option value="DEFINITE_TERM">Xác định thời hạn (1 - 3 năm)</Option>
-                    <Option value="INDEFINITE_TERM">Không xác định thời hạn</Option>
-                    <Option value="SEASONAL">Hợp đồng thời vụ</Option>
-                    <Option value="INTERNSHIP">Hợp đồng thực tập</Option>
+                    <Option value="PROBATION">{t.contract.typeProbation}</Option>
+                    <Option value="DEFINITE_TERM">{t.contract.typeDefinite}</Option>
+                    <Option value="INDEFINITE_TERM">{t.contract.typeIndefinite}</Option>
+                    <Option value="SEASONAL">{t.contract.typeSeasonal}</Option>
+                    <Option value="INTERNSHIP">{t.contract.typeInternship}</Option>
                   </Select>
                 )}
               />
@@ -178,16 +178,16 @@ export default function ContractModal({
           </Col>
 
           <Col span={12}>
-            <Form.Item label="Trạng thái" required>
+            <Form.Item label={t.common.status} required>
               <Controller
                 name="status"
                 control={control}
                 render={({ field }) => (
                   <Select {...field} className="w-full">
-                    <Option value="ACTIVE">Đang hiệu lực</Option>
-                    <Option value="DRAFT">Bản nháp</Option>
-                    <Option value="EXPIRED">Hết hạn</Option>
-                    <Option value="TERMINATED">Chấm dứt trước hạn</Option>
+                    <Option value="ACTIVE">{t.contract.statusActive}</Option>
+                    <Option value="DRAFT">{t.contract.statusDraft}</Option>
+                    <Option value="EXPIRED">{t.contract.statusExpired}</Option>
+                    <Option value="TERMINATED">{t.contract.statusTerminated}</Option>
                   </Select>
                 )}
               />
@@ -198,7 +198,7 @@ export default function ContractModal({
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              label="Lương cơ bản (VND)"
+              label={`${t.contract.baseSalary} (VND)`}
               required
               validateStatus={errors.baseSalary ? "error" : ""}
               help={errors.baseSalary?.message}
@@ -219,7 +219,7 @@ export default function ContractModal({
           </Col>
 
           <Col span={12}>
-            <Form.Item label="Phụ cấp cố định (VND)">
+            <Form.Item label={`${t.contract.allowance} (VND)`}>
               <Controller
                 name="allowance"
                 control={control}
@@ -239,7 +239,7 @@ export default function ContractModal({
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              label="Ngày bắt đầu"
+              label={t.contract.startDate}
               required
               validateStatus={errors.startDate ? "error" : ""}
               help={errors.startDate?.message}
@@ -255,7 +255,7 @@ export default function ContractModal({
           </Col>
 
           <Col span={12}>
-            <Form.Item label="Ngày kết thúc (Bỏ trống nếu vô thời hạn)">
+            <Form.Item label={t.contract.endDateTip}>
               <Controller
                 name="endDate"
                 control={control}
@@ -272,12 +272,12 @@ export default function ContractModal({
           </Col>
         </Row>
 
-        <Form.Item label="Ghi chú">
+        <Form.Item label={t.common.notes}>
           <Controller
             name="notes"
             control={control}
             render={({ field }) => (
-              <Input.TextArea {...field} placeholder="Ghi chú điều khoản bổ sung..." rows={2} />
+              <Input.TextArea {...field} placeholder={t.common.notes} rows={2} />
             )}
           />
         </Form.Item>

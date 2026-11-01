@@ -30,11 +30,11 @@ export function ExpiringContractsList({ contracts }: ExpiringContractsListProps)
                 {item.employee?.lastName} {item.employee?.firstName} ({item.employee?.employeeCode})
               </div>
               <div className="text-xs text-slate-500 truncate mt-0.5">
-                Hợp đồng: {item.contractNumber} • Loại: {item.contractType} • Phòng: {item.employee?.department?.name || "Chưa rõ"}
+                {t.contract.title}: {item.contractNumber} • {t.contract.contractType}: {item.contractType} • {t.employee.department}: {item.employee?.department?.name || t.common.unassigned}
               </div>
             </div>
             <Tag color="error" className="shrink-0">
-              Hết hạn: {new Date(item.endDate).toLocaleDateString("vi-VN")}
+              {t.contract.statusExpired}: {new Date(item.endDate).toLocaleDateString("vi-VN")}
             </Tag>
           </div>
         ))}

@@ -109,7 +109,7 @@ export function EmployeeDetailModal({ open, onClose, employee }: EmployeeDetailM
           <Descriptions.Item label={t.employee.manager}>
             {employee.manager
               ? `${employee.manager.lastName} ${employee.manager.firstName}`
-              : "Không có"}
+              : t.common.none}
           </Descriptions.Item>
 
           <Descriptions.Item label={t.employee.address} span={2}>
@@ -118,14 +118,14 @@ export function EmployeeDetailModal({ open, onClose, employee }: EmployeeDetailM
             </span>
           </Descriptions.Item>
 
-          <Descriptions.Item label="Tài khoản hệ thống" span={2}>
+          <Descriptions.Item label={t.employee.systemAccount} span={2}>
             {employee.userId || employee.user ? (
               <div className="flex items-center gap-2">
-                <Tag color="green">Đã kích hoạt</Tag>
-                <span className="text-xs text-slate-600">Đăng nhập bằng email: <b>{employee.email}</b></span>
+                <Tag color="green">{t.employee.accountActive}</Tag>
+                <span className="text-xs text-slate-600">{t.employee.loginWithEmail} <b>{employee.email}</b></span>
               </div>
             ) : (
-              <Tag color="default">Chưa liên kết tài khoản</Tag>
+              <Tag color="default">{t.employee.noAccountLinked}</Tag>
             )}
           </Descriptions.Item>
         </Descriptions>

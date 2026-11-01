@@ -47,6 +47,10 @@ export interface TranslationContent {
     noData: string;
     viewAll: string;
     unassigned: string;
+    none: string;
+    yes: string;
+    no: string;
+    user: string;
   };
   auth: {
     loginTitle: string;
@@ -98,6 +102,19 @@ export interface TranslationContent {
     role: string;
     initialPassword: string;
     defaultPasswordTip: string;
+    avatarTitle: string;
+    uploadAvatar: string;
+    removeAvatar: string;
+    avatarTip: string;
+    roleEmployee: string;
+    roleHr: string;
+    roleManager: string;
+    roleAdmin: string;
+    accountNote: string;
+    systemAccount: string;
+    accountActive: string;
+    loginWithEmail: string;
+    noAccountLinked: string;
   };
   dashboard: {
     title: string;
@@ -197,6 +214,11 @@ export interface TranslationContent {
     usedDays: string;
     totalDays: string;
     daysUnit: string;
+    startDate: string;
+    endDate: string;
+    confirmCancel: string;
+    myLeavesTab: string;
+    companyLeavesTab: string;
     leaveType: string;
     typeAnnual: string;
     typeSick: string;
@@ -230,6 +252,10 @@ export interface TranslationContent {
     typeInternship: string;
     startDate: string;
     endDate: string;
+    from: string;
+    to: string;
+    fileAttachment: string;
+    endDateTip: string;
     baseSalary: string;
     allowance: string;
     totalSalary: string;
@@ -253,13 +279,29 @@ export interface TranslationContent {
     statusOpen: string;
     statusProcessing: string;
     statusClosed: string;
+    statusCalculated: string;
+    statusPaid: string;
+    payslipCount: string;
     calculate: string;
+    confirmCalculate: string;
     closePeriod: string;
+    confirmClose: string;
     viewPayslips: string;
     latestPayslip: string;
     latestPeriod: string;
     noPayslips: string;
     calculatingFirstPeriod: string;
+    standardSalary: string;
+    actualSalary: string;
+    insuranceDeduction: string;
+    taxDeduction: string;
+    netSalary: string;
+    periodListTab: string;
+    myPayslipsTab: string;
+    detailedPayslipsTitle: string;
+    workDaysStandardActual: string;
+    periodMonthPrefix: string;
+    periodDateRange: string;
     createSuccess: string;
     calculateSuccess: string;
     closeSuccess: string;
@@ -275,6 +317,9 @@ export interface TranslationContent {
     typing: string;
     you: string;
     selectConversation: string;
+    messageSeen: string;
+    messageSent: string;
+    colleague: string;
   };
   notification: {
     title: string;
@@ -289,6 +334,10 @@ export interface TranslationContent {
     notificationMessage: string;
     linkOptional: string;
     sendSuccess: string;
+    typeGeneral: string;
+    typeLeave: string;
+    typePayroll: string;
+    typeContract: string;
   };
   audit: {
     title: string;
@@ -300,6 +349,7 @@ export interface TranslationContent {
     timestamp: string;
     details: string;
     viewJson: string;
+    detailsPayload: string;
   };
   profile: {
     title: string;
@@ -314,6 +364,8 @@ export interface TranslationContent {
     avatarChange: string;
     avatarUploadSuccess: string;
     passwordSuccess: string;
+    avatarFormatError: string;
+    avatarSizeError: string;
   };
 }
 
@@ -367,6 +419,10 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       noData: "Không có dữ liệu hiển thị",
       viewAll: "Xem tất cả",
       unassigned: "Chưa phân bổ",
+      none: "Không có",
+      yes: "Có",
+      no: "Không",
+      user: "Người dùng",
     },
     auth: {
       loginTitle: "Đăng nhập HRM",
@@ -418,6 +474,19 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       role: "Phân quyền (Role)",
       initialPassword: "Mật khẩu tùy chọn",
       defaultPasswordTip: "Tài khoản sẽ dùng Email để đăng nhập.",
+      avatarTitle: "Ảnh đại diện nhân sự",
+      uploadAvatar: "Tải ảnh lên",
+      removeAvatar: "Xóa ảnh",
+      avatarTip: "Định dạng JPG, PNG, WEBP (tối đa 3MB)",
+      roleEmployee: "Nhân viên (EMPLOYEE)",
+      roleHr: "Nhân sự (HR)",
+      roleManager: "Quản lý (MANAGER)",
+      roleAdmin: "Quản trị viên (ADMIN)",
+      accountNote: "Tài khoản sẽ dùng Email nhân viên để đăng nhập. Mật khẩu khởi tạo là:",
+      systemAccount: "Tài khoản hệ thống",
+      accountActive: "Đã kích hoạt",
+      loginWithEmail: "Đăng nhập bằng email:",
+      noAccountLinked: "Chưa liên kết tài khoản",
     },
     dashboard: {
       title: "Tổng quan Quản trị Nhân sự",
@@ -517,6 +586,11 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       usedDays: "Đã sử dụng",
       totalDays: "Tổng ngày phép",
       daysUnit: "ngày",
+      startDate: "Từ ngày",
+      endDate: "Đến ngày",
+      confirmCancel: "Bạn có chắc muốn hủy đơn nghỉ phép này?",
+      myLeavesTab: "Đơn nghỉ phép của tôi",
+      companyLeavesTab: "Duyệt đơn toàn công ty",
       leaveType: "Loại nghỉ phép",
       typeAnnual: "Nghỉ phép năm",
       typeSick: "Nghỉ ốm",
@@ -550,6 +624,10 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       typeInternship: "Thực tập",
       startDate: "Ngày bắt đầu",
       endDate: "Ngày kết thúc",
+      from: "Từ",
+      to: "Đến",
+      fileAttachment: "File đính kèm",
+      endDateTip: "Ngày kết thúc (Bỏ trống nếu vô thời hạn)",
       baseSalary: "Lương cơ bản",
       allowance: "Phụ cấp",
       totalSalary: "Tổng thu nhập",
@@ -573,13 +651,29 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       statusOpen: "Đang mở",
       statusProcessing: "Đang xử lý",
       statusClosed: "Đã chốt",
+      statusCalculated: "Đã tính toán",
+      statusPaid: "Đã thanh toán",
+      payslipCount: "Số phiếu lương",
       calculate: "Tính lương",
+      confirmCalculate: "Tính toán bảng lương toàn thể nhân viên cho kỳ này?",
       closePeriod: "Đóng kỳ lương",
+      confirmClose: "Chốt kỳ lương và gửi phiếu lương cho toàn thể nhân viên?",
       viewPayslips: "Xem phiếu lương",
       latestPayslip: "Phiếu lương gần nhất",
       latestPeriod: "Kỳ lương gần nhất",
       noPayslips: "Chưa có phiếu lương",
       calculatingFirstPeriod: "Kỳ lương đầu tiên đang tính",
+      standardSalary: "Lương chuẩn",
+      actualSalary: "Lương thực tế",
+      insuranceDeduction: "Bảo hiểm",
+      taxDeduction: "Thuế TNCN",
+      netSalary: "Lương NET",
+      periodListTab: "Danh sách các kỳ tính lương",
+      myPayslipsTab: "Phiếu lương của tôi",
+      detailedPayslipsTitle: "Bảng lương chi tiết",
+      workDaysStandardActual: "Công chuẩn / Thực tế",
+      periodMonthPrefix: "Kỳ lương Tháng",
+      periodDateRange: "Chu kỳ tính lương",
       createSuccess: "Tạo kỳ lương thành công!",
       calculateSuccess: "Đã tính lương cho kỳ thành công!",
       closeSuccess: "Đã chốt kỳ lương thành công!",
@@ -595,6 +689,9 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       typing: "đang soạn tin...",
       you: "Bạn",
       selectConversation: "Chọn một đồng nghiệp bên trái để bắt đầu trò chuyện",
+      messageSeen: "Đã xem",
+      messageSent: "Đã gửi",
+      colleague: "Đồng nghiệp",
     },
     notification: {
       title: "Thông báo",
@@ -609,6 +706,10 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       notificationMessage: "Nội dung thông báo",
       linkOptional: "Đường dẫn chuyển hướng (tùy chọn)",
       sendSuccess: "Gửi thông báo thành công!",
+      typeGeneral: "Thông báo chung",
+      typeLeave: "Cập nhật Nghỉ phép",
+      typePayroll: "Thông báo Bảng lương",
+      typeContract: "Nhắc nhở Hợp đồng",
     },
     audit: {
       title: "Nhật ký Hoạt động",
@@ -620,6 +721,7 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       timestamp: "Thời gian",
       details: "Chi tiết",
       viewJson: "Xem dữ liệu JSON",
+      detailsPayload: "Dữ liệu chi tiết (Payload):",
     },
     profile: {
       title: "Hồ sơ cá nhân",
@@ -634,6 +736,8 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       avatarChange: "Thay đổi ảnh đại diện",
       avatarUploadSuccess: "Cập nhật ảnh đại diện thành công!",
       passwordSuccess: "Đổi mật khẩu thành công!",
+      avatarFormatError: "Chỉ chấp nhận file ảnh định dạng JPG, PNG hoặc WEBP",
+      avatarSizeError: "Kích thước ảnh không được vượt quá 3MB",
     },
   },
   en: {
@@ -685,6 +789,10 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       noData: "No data available",
       viewAll: "View all",
       unassigned: "Unassigned",
+      none: "None",
+      yes: "Yes",
+      no: "No",
+      user: "User",
     },
     auth: {
       loginTitle: "Sign in to HRM",
@@ -736,6 +844,19 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       role: "System Role",
       initialPassword: "Custom initial password",
       defaultPasswordTip: "Account uses employee email for authentication.",
+      avatarTitle: "Employee Profile Photo",
+      uploadAvatar: "Upload Photo",
+      removeAvatar: "Remove Photo",
+      avatarTip: "Format JPG, PNG, WEBP (max 3MB)",
+      roleEmployee: "Staff (EMPLOYEE)",
+      roleHr: "Human Resources (HR)",
+      roleManager: "Department Manager (MANAGER)",
+      roleAdmin: "Administrator (ADMIN)",
+      accountNote: "The user will sign in using their employee email. Initial default password:",
+      systemAccount: "System Account",
+      accountActive: "Active",
+      loginWithEmail: "Sign in with email:",
+      noAccountLinked: "No account linked",
     },
     dashboard: {
       title: "HR Analytics Dashboard",
@@ -835,6 +956,11 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       usedDays: "Used Days",
       totalDays: "Total Days",
       daysUnit: "days",
+      startDate: "Start Date",
+      endDate: "End Date",
+      confirmCancel: "Are you sure you want to cancel this leave request?",
+      myLeavesTab: "My Leave Requests",
+      companyLeavesTab: "Company Leave Approvals",
       leaveType: "Leave Type",
       typeAnnual: "Annual Leave",
       typeSick: "Sick Leave",
@@ -868,6 +994,10 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       typeInternship: "Internship",
       startDate: "Start Date",
       endDate: "End Date",
+      from: "From",
+      to: "To",
+      fileAttachment: "Attachment",
+      endDateTip: "End Date (Leave blank if indefinite)",
       baseSalary: "Base Salary",
       allowance: "Allowance",
       totalSalary: "Total Compensation",
@@ -891,13 +1021,29 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       statusOpen: "Open",
       statusProcessing: "Processing",
       statusClosed: "Closed",
+      statusCalculated: "Calculated",
+      statusPaid: "Paid",
+      payslipCount: "Payslips Count",
       calculate: "Run Payroll",
+      confirmCalculate: "Calculate payroll for all employees in this period?",
       closePeriod: "Close Period",
+      confirmClose: "Close payroll period and distribute payslips to all employees?",
       viewPayslips: "View Payslips",
       latestPayslip: "Latest Payslip",
       latestPeriod: "Latest payroll period",
       noPayslips: "No payslips available",
       calculatingFirstPeriod: "First payroll period is in progress",
+      standardSalary: "Standard Salary",
+      actualSalary: "Actual Salary",
+      insuranceDeduction: "Insurance",
+      taxDeduction: "Personal Income Tax",
+      netSalary: "Net Take-Home Pay",
+      periodListTab: "Payroll Periods",
+      myPayslipsTab: "My Payslips",
+      detailedPayslipsTitle: "Detailed Payroll Breakdown",
+      workDaysStandardActual: "Standard / Actual Workdays",
+      periodMonthPrefix: "Payroll Period Month",
+      periodDateRange: "Period Date Range",
       createSuccess: "Payroll period created successfully!",
       calculateSuccess: "Payroll calculated successfully!",
       closeSuccess: "Payroll period closed successfully!",
@@ -913,6 +1059,9 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       typing: "is typing...",
       you: "You",
       selectConversation: "Select a colleague on the left to start chatting",
+      messageSeen: "Seen",
+      messageSent: "Sent",
+      colleague: "Colleague",
     },
     notification: {
       title: "Notifications",
@@ -927,6 +1076,10 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       notificationMessage: "Message",
       linkOptional: "Redirect link (optional)",
       sendSuccess: "Notification sent successfully!",
+      typeGeneral: "General Announcement",
+      typeLeave: "Leave Update",
+      typePayroll: "Payroll Notice",
+      typeContract: "Contract Reminder",
     },
     audit: {
       title: "Audit Logs",
@@ -938,6 +1091,7 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       timestamp: "Timestamp",
       details: "Details",
       viewJson: "View JSON Payload",
+      detailsPayload: "Detailed Payload:",
     },
     profile: {
       title: "Personal Profile",
@@ -952,6 +1106,8 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       avatarChange: "Change Avatar",
       avatarUploadSuccess: "Avatar updated successfully!",
       passwordSuccess: "Password changed successfully!",
+      avatarFormatError: "Only JPG, PNG or WEBP images are supported",
+      avatarSizeError: "Image size must not exceed 3MB",
     },
   },
 };

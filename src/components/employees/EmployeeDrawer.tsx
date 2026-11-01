@@ -123,13 +123,13 @@ export function EmployeeDrawer({
   const handleAvatarUpload = async (file: File) => {
     const isImage = ["image/jpeg", "image/png", "image/webp"].includes(file.type);
     if (!isImage) {
-      message.error("Chỉ chấp nhận file ảnh JPG, PNG hoặc WEBP");
+      message.error(t.profile.avatarFormatError);
       return false;
     }
 
     const isLt3M = file.size / 1024 / 1024 < 3;
     if (!isLt3M) {
-      message.error("Kích thước ảnh không được vượt quá 3MB");
+      message.error(t.profile.avatarSizeError);
       return false;
     }
 
@@ -145,9 +145,9 @@ export function EmployeeDrawer({
       if (res.success && res.data?.avatarUrl) {
         setAvatarUrl(res.data.avatarUrl);
         setValue("avatarUrl", res.data.avatarUrl);
-        message.success("Tải ảnh đại diện thành công!");
+        message.success(t.profile.avatarUploadSuccess);
       } else {
-        message.error(res.message || "Tải ảnh thất bại");
+        message.error(res.message || t.common.error);
       }
     } catch (err) {
       const msg = await parseApiError(err);
@@ -211,7 +211,7 @@ export function EmployeeDrawer({
             {initialData?.firstName?.charAt(0) || "E"}
           </Avatar>
           <div>
-            <div className="text-sm font-semibold text-slate-700 mb-1">Ảnh đại diện nhân sự</div>
+            <div className="text-sm font-semibold text-slate-700 mb-1">{t.employee.avatarTitle}</div>
             <div className="flex items-center gap-2">
               <Upload
                 showUploadList={false}
@@ -219,16 +219,16 @@ export function EmployeeDrawer({
                 accept="image/jpeg,image/png,image/webp"
               >
                 <Button size="small" icon={<UploadOutlined />} loading={isUploadingAvatar}>
-                  {avatarUrl ? "Thay đổi ảnh" : "Tải ảnh lên"}
+                  {avatarUrl ? t.profile.avatarChange : t.employee.uploadAvatar}
                 </Button>
               </Upload>
               {avatarUrl && (
                 <Button size="small" danger type="text" onClick={() => setAvatarUrl(undefined)}>
-                  Xóa ảnh
+                  {t.employee.removeAvatar}
                 </Button>
               )}
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">Định dạng JPG, PNG, WEBP (tối đa 3MB)</div>
+            <div className="text-[11px] text-slate-400 mt-1">{t.employee.avatarTip}</div>
           </div>
         </div>
 
@@ -440,7 +440,7 @@ export function EmployeeDrawer({
               <div className="flex items-center gap-2">
                 <KeyOutlined className="text-blue-600 font-semibold" />
                 <span className="font-semibold text-slate-800 text-sm">
-                  Cấp tài khoản đăng nhập hệ thống
+                  {t.employee.createAccount}
                 </span>
               </div>
               <Controller
@@ -450,8 +450,8 @@ export function EmployeeDrawer({
                   <Switch
                     checked={field.value}
                     onChange={field.onChange}
-                    checkedChildren="Cấp TK"
-                    unCheckedChildren="Không"
+                    checkedChildren={t.common.yes}
+                    unCheckedChildren={t.common.no}
                   />
                 )}
               />
@@ -461,30 +461,30 @@ export function EmployeeDrawer({
               <div className="space-y-3 pt-1">
                 <Row gutter={16}>
                   <Col span={12}>
-                    <Form.Item label="Phân quyền (Role)" className="!mb-2">
+                    <Form.Item label={t.employee.role} className="!mb-2">
                       <Controller
                         name="role"
                         control={control}
                         render={({ field }) => (
                           <Select {...field} className="w-full">
-                            <Option value="EMPLOYEE">Nhân viên (EMPLOYEE)</Option>
-                            <Option value="HR">Nhân sự (HR)</Option>
-                            <Option value="MANAGER">Quản lý (MANAGER)</Option>
-                            <Option value="ADMIN">Quản trị viên (ADMIN)</Option>
+                            <Option value="EMPLOYEE">{t.employee.roleEmployee}</Option>
+                            <Option value="HR">{t.employee.roleHr}</Option>
+                            <Option value="MANAGER">{t.employee.roleManager}</Option>
+                            <Option value="ADMIN">{t.employee.roleAdmin}</Option>
                           </Select>
                         )}
                       />
                     </Form.Item>
                   </Col>
                   <Col span={12}>
-                    <Form.Item label="Mật khẩu tùy chọn" className="!mb-2">
+                    <Form.Item label={t.employee.initialPassword} className="!mb-2">
                       <Controller
                         name="initialPassword"
                         control={control}
                         render={({ field }) => (
                           <Input.Password
                             {...field}
-                            placeholder="Mặc định: new12345"
+                            placeholder={t.employee.defaultPasswordTip}
                           />
                         )}
                       />
@@ -492,11 +492,10 @@ export function EmployeeDrawer({
                   </Col>
                 </Row>
                 <div className="text-[11px] text-blue-700 bg-blue-100/70 px-3 py-2 rounded-lg leading-relaxed">
-                  💡 Tài khoản sẽ dùng <b>Email nhân viên</b> để đăng nhập. Mật khẩu khởi tạo là:{" "}
+                  💡 {t.employee.accountNote}{" "}
                   <span className="font-mono font-bold text-blue-900 bg-white/80 px-1.5 py-0.5 rounded border border-blue-200">
                     {watchInitialPassword || "new12345"}
                   </span>
-                  . Nhân viên có thể đổi mật khẩu sau khi đăng nhập.
                 </div>
               </div>
             )}

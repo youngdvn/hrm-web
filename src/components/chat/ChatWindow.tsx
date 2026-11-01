@@ -151,11 +151,11 @@ export function ChatWindow({
                   {isMe && (
                     <span className="flex items-center ml-0.5">
                       {msg.isRead ? (
-                        <Tooltip title="Đã xem">
+                        <Tooltip title={t.chat.messageSeen}>
                           <CheckCircleFilled className="text-blue-500 text-[10px]" />
                         </Tooltip>
                       ) : (
-                        <Tooltip title="Đã gửi">
+                        <Tooltip title={t.chat.messageSent}>
                           <CheckOutlined className="text-slate-400 text-[10px]" />
                         </Tooltip>
                       )}
@@ -180,7 +180,7 @@ export function ChatWindow({
             </Avatar>
             <div className="bg-white border border-slate-200 px-3 py-2 rounded-2xl rounded-bl-xs flex items-center gap-2 shadow-2xs">
               <span className="text-xs text-slate-500">
-                {activePartner.fullName || "Đồng nghiệp"} {t.chat.typing}
+                {activePartner.fullName || t.chat.colleague} {t.chat.typing}
               </span>
               <span className="inline-flex gap-1 items-center">
                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />

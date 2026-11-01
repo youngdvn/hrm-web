@@ -115,13 +115,13 @@ export default function LeavesPage() {
       render: (type: LeaveType) => <Tag color="blue">{leaveTypeLabel[type] || type}</Tag>,
     },
     {
-      title: "Từ ngày",
+      title: t.leave.startDate,
       dataIndex: "startDate",
       key: "startDate",
       render: (d) => dayjs(d).format("DD/MM/YYYY"),
     },
     {
-      title: "Đến ngày",
+      title: t.leave.endDate,
       dataIndex: "endDate",
       key: "endDate",
       render: (d) => dayjs(d).format("DD/MM/YYYY"),
@@ -132,7 +132,7 @@ export default function LeavesPage() {
       key: "totalDays",
       render: (days) => (
         <span className="font-semibold text-slate-800">
-          {days} {t.common.records}
+          {days} {t.leave.daysUnit}
         </span>
       ),
     },
@@ -155,7 +155,7 @@ export default function LeavesPage() {
       render: (_: unknown, record: LeaveRequest) =>
         record.status === "PENDING" && (
           <Popconfirm
-            title="Bạn có chắc muốn hủy đơn nghỉ phép này?"
+            title={t.leave.confirmCancel}
             onConfirm={() => cancelLeave(record.id)}
             okButtonProps={{ danger: true }}
             okText={t.common.delete}
@@ -196,7 +196,7 @@ export default function LeavesPage() {
       render: (_, r) => (
         <span className="text-xs">
           {dayjs(r.startDate).format("DD/MM/YYYY")} - {dayjs(r.endDate).format("DD/MM/YYYY")} (
-          {r.totalDays} ngày)
+          {r.totalDays} {t.leave.daysUnit})
         </span>
       ),
     },
@@ -274,7 +274,7 @@ export default function LeavesPage() {
             <Statistic
               title={<span className="text-xs font-semibold text-slate-500 uppercase">{t.leave.annualBalance}</span>}
               value={myBalance?.totalDays ?? 12}
-              suffix="ngày"
+              suffix={t.leave.daysUnit}
               styles={{ content: { fontWeight: 700, color: "#1e293b" } }}
             />
           </Card>
@@ -285,7 +285,7 @@ export default function LeavesPage() {
             <Statistic
               title={<span className="text-xs font-semibold text-slate-500 uppercase">{t.leave.usedDays}</span>}
               value={myBalance?.usedDays ?? 0}
-              suffix="ngày"
+              suffix={t.leave.daysUnit}
               styles={{ content: { fontWeight: 700, color: "#d97706" } }}
             />
           </Card>
@@ -296,7 +296,7 @@ export default function LeavesPage() {
             <Statistic
               title={<span className="text-xs font-semibold text-slate-500 uppercase">{t.leave.remainingDays}</span>}
               value={myBalance?.remainingDays ?? 12}
-              suffix="ngày"
+              suffix={t.leave.daysUnit}
               styles={{ content: { fontWeight: 700, color: "#16a34a" } }}
             />
           </Card>
@@ -310,7 +310,7 @@ export default function LeavesPage() {
           items={[
             {
               key: "my",
-              label: "Đơn nghỉ phép của tôi",
+              label: t.leave.myLeavesTab,
               children: (
                 <Table
                   columns={myColumns}
@@ -325,7 +325,7 @@ export default function LeavesPage() {
               ? [
                 {
                   key: "company",
-                  label: "Duyệt đơn toàn công ty",
+                  label: t.leave.companyLeavesTab,
                   children: (
                     <Table
                       columns={companyColumns}

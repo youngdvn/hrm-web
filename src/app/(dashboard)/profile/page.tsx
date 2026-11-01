@@ -23,13 +23,13 @@ export default function ProfilePage() {
   const handleUploadAvatar = async (file: File) => {
     const isImage = ["image/jpeg", "image/png", "image/webp"].includes(file.type);
     if (!isImage) {
-      message.error("Chỉ chấp nhận file ảnh định dạng JPG, PNG hoặc WEBP");
+      message.error(t.profile.avatarFormatError);
       return false;
     }
 
     const isLt3M = file.size / 1024 / 1024 < 3;
     if (!isLt3M) {
-      message.error("Kích thước ảnh không được vượt quá 3MB");
+      message.error(t.profile.avatarSizeError);
       return false;
     }
 
