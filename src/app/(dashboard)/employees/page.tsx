@@ -27,11 +27,22 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useAuthStore } from "@/stores/auth.store";
+import dynamic from "next/dynamic";
 import { useI18nStore } from "@/stores/i18n.store";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Employee, EmployeeStatus, CreateEmployeeInput } from "@/types/employee.types";
-import { EmployeeDrawer } from "@/components/employees/EmployeeDrawer";
-import { EmployeeDetailModal } from "@/components/employees/EmployeeDetailModal";
 import { getMediaUrl } from "@/lib/api-client";
+
+// Lazy loading Drawer và Modal chi tiết (chỉ nạp JS khi người dùng mở)
+const EmployeeDrawer = dynamic(
+  () => import("@/components/employees/EmployeeDrawer").then((mod) => mod.EmployeeDrawer),
+  { ssr: false }
+);
+
+const EmployeeDetailModal = dynamic(
+  () => import("@/components/employees/EmployeeDetailModal").then((mod) => mod.EmployeeDetailModal),
+  { ssr: false }
+);
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -45,6 +56,7 @@ export default function EmployeesPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 350);
   const [departmentId, setDepartmentId] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<EmployeeStatus | undefined>(undefined);
 
@@ -69,7 +81,7 @@ export default function EmployeesPage() {
   } = useEmployees({
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     departmentId,
     status,
   });

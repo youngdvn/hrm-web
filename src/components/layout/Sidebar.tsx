@@ -105,6 +105,18 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
     },
   ];
 
+  // Prefetch route code on hover for instant navigation
+  const enhancedMenuItems = menuItems?.map((item) => {
+    if (!item || !("key" in item) || typeof item.key !== "string") return item;
+    const targetKey = item.key;
+    return {
+      ...item,
+      onMouseEnter: () => {
+        router.prefetch(targetKey);
+      },
+    };
+  });
+
   return (
     <Sider
       collapsible
@@ -131,7 +143,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
         <Menu
           mode="inline"
           selectedKeys={[pathname]}
-          items={menuItems}
+          items={enhancedMenuItems}
           onClick={({ key }) => router.push(key)}
           className="!border-r-0 font-medium"
         />

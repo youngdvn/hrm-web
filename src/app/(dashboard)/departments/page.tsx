@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Table, Button, Card, Typography, Modal, Input, Popconfirm, Space, Form } from "antd";
+import { Table, Button, Card, Typography, Popconfirm, Space } from "antd";
 import { message } from "@/lib/antd-app";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
@@ -14,20 +12,14 @@ import { Department } from "@/types/employee.types";
 import { useAuthStore } from "@/stores/auth.store";
 import { useI18nStore } from "@/stores/i18n.store";
 import { RoleGuard } from "@/components/common/RoleGuard";
+import type { DepartmentFormValues } from "@/components/departments/DepartmentModal";
+
+const DepartmentModal = dynamic(
+  () => import("@/components/departments/DepartmentModal"),
+  { ssr: false }
+);
 
 const { Title, Text } = Typography;
-
-const departmentSchema = z.object({
-  code: z
-    .string()
-    .min(2, "Mã phòng ban tối thiểu 2 ký tự")
-    .max(10, "Mã phòng ban tối đa 10 ký tự")
-    .transform((val) => val.trim().toUpperCase()),
-  name: z.string().min(2, "Tên phòng ban tối thiểu 2 ký tự").transform((val) => val.trim()),
-  description: z.string().optional(),
-});
-
-type DepartmentFormValues = z.infer<typeof departmentSchema>;
 
 export default function DepartmentsPage() {
   const { t } = useI18nStore();
@@ -37,20 +29,6 @@ export default function DepartmentsPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
-
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<DepartmentFormValues>({
-    resolver: zodResolver(departmentSchema),
-    defaultValues: {
-      code: "",
-      name: "",
-      description: "",
-    },
-  });
 
   const { data: departments = [], isLoading } = useQuery<Department[]>({
     queryKey: ["departments"],
@@ -71,7 +49,7 @@ export default function DepartmentsPage() {
       message.success(editingDept ? "Cập nhật phòng ban thành công" : "Tạo phòng ban thành công");
       queryClient.invalidateQueries({ queryKey: ["departments"] });
       setModalOpen(false);
-      reset();
+      setEditingDept(null);
     },
     onError: async (err) => {
       const errMsg = await parseApiError(err);
@@ -95,17 +73,11 @@ export default function DepartmentsPage() {
 
   const handleOpenCreate = () => {
     setEditingDept(null);
-    reset({ code: "", name: "", description: "" });
     setModalOpen(true);
   };
 
   const handleOpenEdit = (dept: Department) => {
     setEditingDept(dept);
-    reset({
-      code: dept.code,
-      name: dept.name,
-      description: dept.description || "",
-    });
     setModalOpen(true);
   };
 
@@ -165,88 +137,51 @@ export default function DepartmentsPage() {
   return (
     <RoleGuard allowedRoles={["ADMIN", "HR"]}>
       <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <Title level={3} className="!mb-1">
-            Quản lý Phòng ban
-          </Title>
-          <Text type="secondary">Cơ cấu tổ chức các phòng ban chuyên môn trong doanh nghiệp</Text>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <Title level={3} className="!mb-1">
+              Quản lý Phòng ban
+            </Title>
+            <Text type="secondary">Cơ cấu tổ chức các phòng ban chuyên môn trong doanh nghiệp</Text>
+          </div>
+
+          {isHrOrAdmin && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              size="large"
+              onClick={handleOpenCreate}
+              className="!shadow-md !shadow-blue-500/20"
+            >
+              Thêm phòng ban
+            </Button>
+          )}
         </div>
 
-        {isHrOrAdmin && (
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            size="large"
-            onClick={handleOpenCreate}
-            className="!shadow-md !shadow-blue-500/20"
-          >
-            Thêm phòng ban
-          </Button>
+        <Card className="shadow-xs border-slate-200">
+          <Table
+            columns={columns}
+            dataSource={departments}
+            rowKey="id"
+            loading={isLoading}
+            pagination={false}
+          />
+        </Card>
+
+        {/* Lazy Loaded Department Modal */}
+        {modalOpen && (
+          <DepartmentModal
+            open={modalOpen}
+            department={editingDept}
+            onClose={() => {
+              setModalOpen(false);
+              setEditingDept(null);
+            }}
+            onSubmit={(values) => saveMutation.mutate(values)}
+            isLoading={saveMutation.isPending}
+          />
         )}
       </div>
-
-      <Card className="shadow-xs border-slate-200">
-        <Table
-          columns={columns}
-          dataSource={departments}
-          rowKey="id"
-          loading={isLoading}
-          pagination={false}
-        />
-      </Card>
-
-      <Modal
-        open={modalOpen}
-        title={editingDept ? "Chỉnh sửa phòng ban" : "Thêm phòng ban mới"}
-        onCancel={() => setModalOpen(false)}
-        onOk={handleSubmit((values) => saveMutation.mutate(values))}
-        confirmLoading={saveMutation.isPending}
-        destroyOnClose
-      >
-        <Form layout="vertical" className="pt-3">
-          <Form.Item
-            label="Mã phòng ban"
-            required
-            validateStatus={errors.code ? "error" : ""}
-            help={errors.code?.message}
-          >
-            <Controller
-              name="code"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="IT, HR, MKT..." disabled={!!editingDept} />
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Tên phòng ban"
-            required
-            validateStatus={errors.name ? "error" : ""}
-            help={errors.name?.message}
-          >
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Phòng Công nghệ Thông tin" />
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item label="Mô tả">
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <Input.TextArea {...field} placeholder="Chức năng, nhiệm vụ phòng ban..." rows={3} />
-              )}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
-  </RoleGuard>
+    </RoleGuard>
   );
 }

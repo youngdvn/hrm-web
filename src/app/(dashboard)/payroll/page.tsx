@@ -1,39 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import dynamic from "next/dynamic";
 import {
   Card,
   Table,
   Button,
   Tag,
   Typography,
-  Modal,
-  Input,
-  DatePicker,
   Popconfirm,
   Space,
-  Form,
-  Row,
-  Col,
   Tabs,
-  Descriptions,
 } from "antd";
 import {
   PlusOutlined,
   CalculatorOutlined,
   CheckCircleOutlined,
   EyeOutlined,
-  DollarCircleOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import { usePayroll } from "@/hooks/usePayroll";
 import { useAuthStore } from "@/stores/auth.store";
-import { request } from "@/lib/api-client";
 import {
   PayrollPeriod,
   Payslip,
@@ -41,19 +29,20 @@ import {
   CreatePeriodInput,
 } from "@/types/payroll.types";
 
+const CreatePeriodModal = dynamic(
+  () => import("@/components/payroll/CreatePeriodModal"),
+  { ssr: false }
+);
+
+const PeriodPayslipsModal = dynamic(
+  () => import("@/components/payroll/PeriodPayslipsModal"),
+  { ssr: false }
+);
+
 const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
 
-const periodFormSchema = z.object({
-  name: z.string().min(2, "Tên kỳ lương tối thiểu 2 ký tự"),
-  month: z.number().int().min(1).max(12),
-  year: z.number().int().min(2020).max(2100),
-  dateRange: z
-    .custom<[Dayjs, Dayjs]>()
-    .refine((val) => val && val[0] && val[1], "Vui lòng chọn thời gian chu kỳ tính lương"),
-});
-
-type PeriodFormValues = z.infer<typeof periodFormSchema>;
+const formatVnd = (val: number) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(val);
 
 export default function PayrollPage() {
   const { hasRole } = useAuthStore();
@@ -76,61 +65,18 @@ export default function PayrollPage() {
     isClosingPeriod,
   } = usePayroll();
 
-  const { data: periodPayslips = [], isLoading: isLoadingPayslips } = useQuery<Payslip[]>({
-    queryKey: ["period-payslips", detailPeriod?.id],
-    queryFn: async () => {
-      if (!detailPeriod) return [];
-      const res = await request.get<Payslip[]>(`payroll/periods/${detailPeriod.id}/payslips`);
-      return res.data || [];
-    },
-    enabled: !!detailPeriod && periodPayslipsModalOpen,
-  });
-
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<PeriodFormValues>({
-    resolver: zodResolver(periodFormSchema),
-    defaultValues: {
-      name: `Kỳ lương Tháng ${dayjs().format("M/YYYY")}`,
-      month: dayjs().month() + 1,
-      year: dayjs().year(),
-      dateRange: [dayjs().startOf("month"), dayjs().endOf("month")],
-    },
-  });
-
-  const onSubmitPeriod = async (values: PeriodFormValues) => {
-    const [start, end] = values.dateRange;
-    const payload: CreatePeriodInput = {
-      name: values.name,
-      month: values.month,
-      year: values.year,
-      startDate: start.toISOString(),
-      endDate: end.toISOString(),
-    };
-    await createPeriod(payload);
+  const handleCreatePeriod = async (values: CreatePeriodInput) => {
+    await createPeriod(values);
     setCreateModalOpen(false);
-    reset();
   };
 
-  const periodStatusColorMap: Record<PayrollPeriodStatus, string> = {
-    DRAFT: "blue",
-    CALCULATED: "orange",
-    PAID: "green",
-    OPEN: "blue",
-    PROCESSING: "orange",
-    CLOSED: "green",
-  };
-
-  const periodStatusLabelMap: Record<PayrollPeriodStatus, string> = {
-    DRAFT: "Bản nháp",
-    CALCULATED: "Đã tính lương",
-    PAID: "Đã chi trả (Đã chốt)",
-    OPEN: "Đang mở",
-    PROCESSING: "Đang tính lương",
-    CLOSED: "Đã chi trả (Đã chốt)",
+  const periodStatusMap: Record<PayrollPeriodStatus, { label: string; color: string }> = {
+    DRAFT: { label: "Bản nháp", color: "default" },
+    OPEN: { label: "Mở kỳ lương", color: "blue" },
+    PROCESSING: { label: "Đang xử lý", color: "processing" },
+    CALCULATED: { label: "Đã tính toán", color: "warning" },
+    PAID: { label: "Đã thanh toán", color: "cyan" },
+    CLOSED: { label: "Đã chốt & Xuất bảng lương", color: "success" },
   };
 
   const periodColumns: ColumnsType<PayrollPeriod> = [
@@ -138,159 +84,134 @@ export default function PayrollPage() {
       title: "Kỳ tính lương",
       dataIndex: "name",
       key: "name",
-      render: (name) => <span className="font-semibold text-slate-800">{name}</span>,
-    },
-    {
-      title: "Tháng/Năm",
-      key: "monthYear",
-      render: (_, r) => `Tháng ${r.month}/${r.year}`,
-    },
-    {
-      title: "Thời gian chu kỳ",
-      key: "periodRange",
-      render: (_, r) =>
-        `${dayjs(r.startDate).format("DD/MM/YYYY")} - ${dayjs(r.endDate).format("DD/MM/YYYY")}`,
-    },
-    {
-      title: "Số nhân viên",
-      key: "employeeCount",
-      render: (_, r) => <span>{r._count?.payslips ?? 0} phiếu</span>,
-    },
-    {
-      title: "Tổng chi trả",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (amt) => (
-        <span className="font-semibold text-emerald-600">
-          {amt ? `${Number(amt).toLocaleString("vi-VN")} đ` : "---"}
-        </span>
+      render: (name, r) => (
+        <div>
+          <div className="font-semibold text-slate-800">{name}</div>
+          <div className="text-xs text-slate-400">
+            Tháng {r.month}/{r.year} ({dayjs(r.startDate).format("DD/MM")} -{" "}
+            {dayjs(r.endDate).format("DD/MM/YYYY")})
+          </div>
+        </div>
       ),
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (st: PayrollPeriodStatus) => (
-        <Tag color={periodStatusColorMap[st] || "default"}>
-          {periodStatusLabelMap[st] || st}
-        </Tag>
-      ),
+      render: (st: PayrollPeriodStatus) => {
+        const item = periodStatusMap[st] || { label: st, color: "default" };
+        return <Tag color={item.color}>{item.label}</Tag>;
+      },
     },
-    ...(isHrOrAdmin
-      ? [
-        {
-          title: "Thao tác",
-          key: "actions",
-          render: (_: unknown, record: PayrollPeriod) => (
-            <Space>
+    {
+      title: "Số phiếu lương",
+      key: "count",
+      render: (_, r) => <span>{r._count?.payslips ?? 0} nhân viên</span>,
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_, r) => (
+        <Space>
+          <Button
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              setDetailPeriod(r);
+              setPeriodPayslipsModalOpen(true);
+            }}
+          >
+            Chi tiết
+          </Button>
+
+          {r.status !== "CLOSED" && (
+            <Popconfirm
+              title="Tính toán bảng lương toàn thể nhân viên cho kỳ này?"
+              onConfirm={() => calculatePeriod({ periodId: r.id })}
+              okText="Tính toán"
+              cancelText="Hủy"
+            >
+              <Button
+                type="primary"
+                size="small"
+                icon={<CalculatorOutlined />}
+                loading={isCalculating}
+                className="!bg-blue-600 hover:!bg-blue-700"
+              >
+                Tính lương
+              </Button>
+            </Popconfirm>
+          )}
+
+          {r.status === "CALCULATED" && (
+            <Popconfirm
+              title="Chốt bảng lương? Nhân viên sẽ xem được phiếu lương của họ."
+              onConfirm={() => closePeriod(r.id)}
+              okText="Chốt sổ"
+              cancelText="Hủy"
+            >
               <Button
                 size="small"
-                icon={<EyeOutlined />}
-                onClick={() => {
-                  setDetailPeriod(record);
-                  setPeriodPayslipsModalOpen(true);
-                }}
+                icon={<CheckCircleOutlined />}
+                loading={isClosingPeriod}
+                className="!text-emerald-600 !border-emerald-600 hover:!bg-emerald-50"
               >
-                Xem bảng lương
+                Chốt kỳ lương
               </Button>
-
-              {record.status !== "PAID" && record.status !== "CLOSED" && (
-                <Button
-                  size="small"
-                  type="primary"
-                  icon={<CalculatorOutlined />}
-                  loading={isCalculating}
-                  onClick={() => calculatePeriod({ periodId: record.id, data: { standardWorkDays: 22 } })}
-                  className="!bg-amber-500 hover:!bg-amber-600"
-                >
-                  Tính lương
-                </Button>
-              )}
-
-              {record.status !== "PAID" && record.status !== "CLOSED" && (
-                <Popconfirm
-                  title="Xác nhận hoàn tất chi trả và đóng kỳ lương?"
-                  onConfirm={() => closePeriod(record.id)}
-                  okText="Đóng kỳ lương"
-                  cancelText="Hủy"
-                >
-                  <Button
-                    size="small"
-                    type="primary"
-                    icon={<CheckCircleOutlined />}
-                    loading={isClosingPeriod}
-                    className="!bg-emerald-600 hover:!bg-emerald-700"
-                  >
-                    Chốt lương
-                  </Button>
-                </Popconfirm>
-              )}
-            </Space>
-          ),
-        },
-      ]
-      : []),
-  ];
-
-  const payslipColumns: ColumnsType<Payslip> = [
-    {
-      title: "Nhân viên",
-      key: "employee",
-      render: (_, r) => (
-        <div>
-          <div className="font-semibold text-slate-800">
-            {r.employee?.lastName} {r.employee?.firstName}
-          </div>
-          <div className="text-xs text-slate-400">
-            {r.employee?.employeeCode} • {r.employee?.department?.name || "Chưa rõ phòng"}
-          </div>
-        </div>
+            </Popconfirm>
+          )}
+        </Space>
       ),
     },
+  ];
+
+  const myPayslipColumns: ColumnsType<Payslip> = [
     {
       title: "Lương cơ bản",
       dataIndex: "baseSalary",
       key: "baseSalary",
-      render: (v) => `${Number(v).toLocaleString("vi-VN")} đ`,
+      render: (v) => formatVnd(v),
+    },
+    {
+      title: "Công chuẩn / Thực tế",
+      key: "workDays",
+      render: (_, r) => (
+        <span className="text-xs">
+          <b>{r.actualWorkDays}</b> / {r.standardWorkDays} ngày
+        </span>
+      ),
+    },
+    {
+      title: "Lương thực tế",
+      dataIndex: "actualSalary",
+      key: "actualSalary",
+      render: (v) => formatVnd(v),
     },
     {
       title: "Phụ cấp",
       dataIndex: "allowance",
       key: "allowance",
-      render: (v) => `${Number(v || 0).toLocaleString("vi-VN")} đ`,
+      render: (v) => formatVnd(v),
     },
     {
-      title: "Công chuẩn / Thực",
-      key: "days",
-      render: (_, r) => `${r.actualWorkDays} / ${r.standardWorkDays} ngày`,
-    },
-    {
-      title: "BHXH (10.5%)",
+      title: "Trừ BH (10.5%)",
       dataIndex: "insuranceDeduction",
       key: "insuranceDeduction",
-      render: (v) => (
-        <span className="text-rose-500">
-          -{Number(v || 0).toLocaleString("vi-VN")} đ
-        </span>
-      ),
+      render: (v) => <span className="text-rose-600">-{formatVnd(v)}</span>,
     },
     {
       title: "Thuế TNCN",
       dataIndex: "taxDeduction",
       key: "taxDeduction",
-      render: (v) => (
-        <span className="text-rose-500">
-          -{Number(v || 0).toLocaleString("vi-VN")} đ
-        </span>
-      ),
+      render: (v) => <span className="text-rose-600">-{formatVnd(v)}</span>,
     },
     {
-      title: "Thực lĩnh (NET)",
+      title: "Lương NET",
       dataIndex: "netSalary",
       key: "netSalary",
       render: (v) => (
         <span className="font-bold text-emerald-600 text-sm">
-          {Number(v).toLocaleString("vi-VN")} đ
+          {formatVnd(v)}
         </span>
       ),
     },
@@ -321,10 +242,7 @@ export default function PayrollPage() {
             type="primary"
             icon={<PlusOutlined />}
             size="large"
-            onClick={() => {
-              reset();
-              setCreateModalOpen(true);
-            }}
+            onClick={() => setCreateModalOpen(true)}
             className="!shadow-md !shadow-blue-500/20"
           >
             Tạo kỳ lương mới
@@ -358,7 +276,7 @@ export default function PayrollPage() {
               label: "Phiếu lương của tôi",
               children: (
                 <Table
-                  columns={payslipColumns.filter((c) => c.key !== "employee")}
+                  columns={myPayslipColumns}
                   dataSource={myPayslips}
                   rowKey="id"
                   loading={isLoadingMyPayslips}
@@ -370,115 +288,27 @@ export default function PayrollPage() {
         />
       </Card>
 
-      {/* Modal View Detail Payslips of Period */}
-      <Modal
-        open={periodPayslipsModalOpen}
-        title={
-          <span className="flex items-center gap-2">
-            <DollarCircleOutlined className="text-emerald-500" /> Bảng lương chi tiết:{" "}
-            {detailPeriod?.name}
-          </span>
-        }
-        onCancel={() => setPeriodPayslipsModalOpen(false)}
-        footer={[
-          <Button key="close" type="primary" onClick={() => setPeriodPayslipsModalOpen(false)}>
-            Đóng
-          </Button>,
-        ]}
-        width={1000}
-      >
-        <div className="py-2">
-          <Table
-            columns={payslipColumns}
-            dataSource={periodPayslips}
-            rowKey="id"
-            loading={isLoadingPayslips}
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 850 }}
-          />
-        </div>
-      </Modal>
+      {/* Lazy Loaded Modal View Detail Payslips of Period */}
+      {periodPayslipsModalOpen && (
+        <PeriodPayslipsModal
+          open={periodPayslipsModalOpen}
+          period={detailPeriod}
+          onClose={() => {
+            setPeriodPayslipsModalOpen(false);
+            setDetailPeriod(null);
+          }}
+        />
+      )}
 
-      {/* Modal Create Period */}
-      <Modal
-        open={createModalOpen}
-        title="Tạo kỳ tính lương mới"
-        onCancel={() => setCreateModalOpen(false)}
-        onOk={handleSubmit(onSubmitPeriod)}
-        confirmLoading={isCreatingPeriod}
-        destroyOnClose
-      >
-        <Form layout="vertical" className="pt-3">
-          <Form.Item
-            label="Tên kỳ lương"
-            required
-            validateStatus={errors.name ? "error" : ""}
-            help={errors.name?.message}
-          >
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="Kỳ lương Tháng 10/2026" />
-              )}
-            />
-          </Form.Item>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item label="Tháng" required>
-                <Controller
-                  name="month"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      type="number"
-                      min={1}
-                      max={12}
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  )}
-                />
-              </Form.Item>
-            </Col>
-
-            <Col span={12}>
-              <Form.Item label="Năm" required>
-                <Controller
-                  name="year"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      type="number"
-                      min={2020}
-                      max={2100}
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  )}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item
-            label="Khoảng thời gian tính công"
-            required
-            validateStatus={errors.dateRange ? "error" : ""}
-            help={errors.dateRange?.message}
-          >
-            <Controller
-              name="dateRange"
-              control={control}
-              render={({ field }) => (
-                <RangePicker {...field} className="w-full" format="YYYY-MM-DD" />
-              )}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+      {/* Lazy Loaded Modal Create Period */}
+      {createModalOpen && (
+        <CreatePeriodModal
+          open={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          onSubmit={handleCreatePeriod}
+          isCreating={isCreatingPeriod}
+        />
+      )}
     </div>
   );
 }
-

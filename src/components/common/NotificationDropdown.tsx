@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import {
   Badge,
   Button,
@@ -8,11 +9,6 @@ import {
   List,
   Typography,
   Empty,
-  Modal,
-  Form,
-  Input,
-  Select,
-  Radio,
   Space,
 } from "antd";
 import {
@@ -27,14 +23,17 @@ import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useEmployees } from "@/hooks/useEmployees";
 import { useAuthStore } from "@/stores/auth.store";
 import { AppNotification, NotificationType, SendNotificationPayload } from "@/types/notification.types";
+
+const SendNotificationModal = dynamic(
+  () => import("./SendNotificationModal"),
+  { ssr: false }
+);
 
 dayjs.extend(relativeTime);
 
 const { Text } = Typography;
-const { Option } = Select;
 
 const getTypeIcon = (type: NotificationType) => {
   switch (type) {
@@ -56,12 +55,6 @@ export function NotificationDropdown() {
   const isHrOrAdmin = hasRole(["ADMIN", "HR"]);
 
   const [sendModalOpen, setSendModalOpen] = useState(false);
-  const [targetType, setTargetType] = useState<"ALL" | "SPECIFIC">("ALL");
-  const [selectedUserId, setSelectedUserId] = useState<string | undefined>(undefined);
-  const [title, setTitle] = useState("");
-  const [messageText, setMessageText] = useState("");
-  const [notifType, setNotifType] = useState<NotificationType>("GENERAL");
-  const [link, setLink] = useState("");
 
   const {
     notifications,
@@ -73,8 +66,6 @@ export function NotificationDropdown() {
     isSending,
   } = useNotifications();
 
-  const { employees } = useEmployees({ limit: 100 });
-
   const handleNotificationClick = (item: AppNotification) => {
     if (!item.isRead) {
       markAsRead(item.id);
@@ -84,25 +75,8 @@ export function NotificationDropdown() {
     }
   };
 
-  const handleSendSubmit = async () => {
-    if (!title.trim() || !messageText.trim()) return;
-
-    const payload: SendNotificationPayload = {
-      targetAll: targetType === "ALL",
-      userId: targetType === "SPECIFIC" ? selectedUserId : undefined,
-      title: title.trim(),
-      message: messageText.trim(),
-      type: notifType,
-      link: link.trim() || undefined,
-    };
-
+  const handleSendNotification = async (payload: SendNotificationPayload) => {
     await sendNotification(payload);
-    setSendModalOpen(false);
-    setTitle("");
-    setMessageText("");
-    setLink("");
-    setSelectedUserId(undefined);
-    setTargetType("ALL");
   };
 
   const menuContent = (
@@ -150,8 +124,9 @@ export function NotificationDropdown() {
             renderItem={(item) => (
               <List.Item
                 onClick={() => handleNotificationClick(item)}
-                className={`!px-3.5 !py-3 cursor-pointer transition-colors border-b border-slate-50 last:border-b-0 hover:bg-slate-50 ${!item.isRead ? "bg-blue-50/30" : ""
-                  }`}
+                className={`!px-3.5 !py-3 cursor-pointer transition-colors border-b border-slate-50 last:border-b-0 hover:bg-slate-50 ${
+                  !item.isRead ? "bg-blue-50/30" : ""
+                }`}
               >
                 <div className="flex items-start gap-3 w-full">
                   <div className="mt-0.5 p-2 rounded-lg bg-slate-100 text-sm">
@@ -160,10 +135,11 @@ export function NotificationDropdown() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1 mb-0.5">
                       <span
-                        className={`text-xs truncate ${!item.isRead
+                        className={`text-xs truncate ${
+                          !item.isRead
                             ? "font-semibold text-slate-900"
                             : "font-medium text-slate-700"
-                          }`}
+                        }`}
                       >
                         {item.title}
                       </span>
@@ -208,95 +184,15 @@ export function NotificationDropdown() {
         </Button>
       </Dropdown>
 
-      {/* Send Notification Modal (Admin & HR) */}
-      <Modal
-        open={sendModalOpen}
-        title={
-          <span className="flex items-center gap-2">
-            <SendOutlined className="text-blue-600" /> Soạn thông báo nội bộ
-          </span>
-        }
-        onCancel={() => setSendModalOpen(false)}
-        onOk={handleSendSubmit}
-        confirmLoading={isSending}
-        okText="Gửi ngay"
-        cancelText="Hủy"
-        destroyOnHidden
-      >
-        <Form layout="vertical" className="pt-3">
-          <Form.Item label="Đối tượng nhận" required>
-            <Radio.Group
-              value={targetType}
-              onChange={(e) => setTargetType(e.target.value)}
-              className="mb-2"
-            >
-              <Radio value="ALL">Toàn thể nhân viên (Broadcast)</Radio>
-              <Radio value="SPECIFIC">Gửi cho 1 nhân viên cụ thể</Radio>
-            </Radio.Group>
-
-            {targetType === "SPECIFIC" && (
-              <Select
-                placeholder="Chọn nhân viên nhận thông báo"
-                value={selectedUserId}
-                onChange={(val) => setSelectedUserId(val)}
-                showSearch
-                optionFilterProp="children"
-                className="w-full mt-2"
-              >
-                {employees
-                  .filter((e) => !!e.userId)
-                  .map((e) => (
-                    <Option key={e.userId!} value={e.userId!}>
-                      {e.lastName} {e.firstName} ({e.employeeCode})
-                    </Option>
-                  ))}
-              </Select>
-            )}
-          </Form.Item>
-
-          <Form.Item label="Loại thông báo" required>
-            <Select
-              value={notifType}
-              onChange={(val) => setNotifType(val)}
-              className="w-full"
-            >
-              <Option value="GENERAL">Thông báo chung</Option>
-              <Option value="LEAVE_STATUS">Cập nhật Nghỉ phép</Option>
-              <Option value="PAYROLL_PUBLISHED">Thông báo Bảng lương</Option>
-              <Option value="CONTRACT_EXPIRING">Nhắc nhở Hợp đồng</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item label="Tiêu đề thông báo" required>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Nhập tiêu đề thông báo..."
-              maxLength={150}
-              showCount
-            />
-          </Form.Item>
-
-          <Form.Item label="Nội dung thông báo" required>
-            <Input.TextArea
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Nhập nội dung chi tiết thông báo..."
-              rows={4}
-              maxLength={1000}
-              showCount
-            />
-          </Form.Item>
-
-          <Form.Item label="Đường link điều hướng (tùy chọn)">
-            <Input
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              placeholder="/payroll, /leaves, /attendance..."
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+      {/* Send Notification Modal (Admin & HR) - Lazy loaded */}
+      {sendModalOpen && (
+        <SendNotificationModal
+          open={sendModalOpen}
+          onClose={() => setSendModalOpen(false)}
+          onSend={handleSendNotification}
+          isSending={isSending}
+        />
+      )}
     </>
   );
 }

@@ -20,6 +20,7 @@ import {
   CheckCircleFilled,
 } from "@ant-design/icons";
 import { useChat } from "@/hooks/useChat";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useAuthStore } from "@/stores/auth.store";
 import { useI18nStore } from "@/stores/i18n.store";
 import { getMediaUrl } from "@/lib/api-client";
@@ -29,6 +30,7 @@ export default function ChatPage() {
   const { user } = useAuthStore();
   const { t, locale } = useI18nStore();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [activePartner, setActivePartner] = useState<ConversationItem["partner"] | null>(null);
   const [inputText, setInputText] = useState("");
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -45,7 +47,7 @@ export default function ChatPage() {
     isPartnerOnline,
     isPartnerTyping,
     sendTypingStatus,
-  } = useChat(activePartner?.id, search);
+  } = useChat(activePartner?.id, debouncedSearch);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

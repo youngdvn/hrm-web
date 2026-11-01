@@ -18,6 +18,9 @@ export interface Position {
   description?: string | null;
   baseSalaryMin?: number;
   baseSalaryMax?: number;
+  _count?: {
+    employees: number;
+  };
 }
 
 export interface Employee {
