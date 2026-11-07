@@ -47,7 +47,7 @@ export function AttendanceMiniStats({ records }: AttendanceMiniStatsProps) {
   }, [records]);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 px-4">
       <div className="bg-gradient-to-br from-white to-blue-50/40 border border-blue-100/80 rounded-2xl p-3 text-center shadow-2xs hover:shadow-xs transition-shadow">
         <div className="flex items-center justify-center gap-1 text-[11px] text-blue-600 font-semibold mb-0.5">
           <CalendarOutlined /> {t.attendance.totalWorkDays || "Ngày công"}

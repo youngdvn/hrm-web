@@ -165,7 +165,7 @@ export function MyAttendanceTab() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 my-4 px-4">
       {/* Top Punch Center & Clock Card */}
       <Card className="shadow-xs border-slate-200">
         <Row gutter={[24, 24]} align="middle">
@@ -231,8 +231,8 @@ export function MyAttendanceTab() {
       </Card>
 
       {/* Mini Stats (This Month) */}
-      <div>
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2.5">
+      <div className="">
+        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-4 my-2.5">
           {t.attendance.todayStatus} & Thống kê tháng này
         </div>
         <AttendanceMiniStats records={myHistory} />

@@ -126,12 +126,12 @@ export default function AttendancePage() {
         r.status === "PRESENT"
           ? "Đúng giờ"
           : r.status === "LATE"
-          ? "Đi muộn"
-          : r.status === "HALF_DAY"
-          ? "Nửa ngày"
-          : r.status === "EARLY_LEAVE"
-          ? "Về sớm"
-          : "Vắng mặt";
+            ? "Đi muộn"
+            : r.status === "HALF_DAY"
+              ? "Nửa ngày"
+              : r.status === "EARLY_LEAVE"
+                ? "Về sớm"
+                : "Vắng mặt";
       const notes = (r.notes || "").replace(/"/g, '""');
 
       return [
@@ -291,148 +291,148 @@ export default function AttendancePage() {
     },
     ...(isManagerOrAbove
       ? [
-          {
-            key: "company-attendance",
-            label: (
-              <span className="flex items-center gap-2">
-                <CalendarOutlined /> {t.attendance.companyAttendanceTab}
-              </span>
-            ),
-            children: (
-              <div className="space-y-6 pt-2">
-                {/* Header & Export Action */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-800 mb-0.5">
-                      {t.attendance.companyAttendanceManagement}
-                    </h2>
-                    <p className="text-xs text-slate-500">{t.attendance.companyAttendanceDesc}</p>
+        {
+          key: "company-attendance",
+          label: (
+            <span className="flex items-center gap-2">
+              <CalendarOutlined /> {t.attendance.companyAttendanceTab}
+            </span>
+          ),
+          children: (
+            <div className="flex flex-col gap-4 pt-2 my-4 px-4">
+              {/* Header & Export Action */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800 mb-0.5">
+                    {t.attendance.companyAttendanceManagement}
+                  </h2>
+                  <p className="text-xs text-slate-500">{t.attendance.companyAttendanceDesc}</p>
+                </div>
+
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  onClick={handleExportExcel}
+                  className="!bg-emerald-600 hover:!bg-emerald-500 font-medium self-start sm:self-center"
+                >
+                  {t.attendance.exportExcel}
+                </Button>
+              </div>
+
+              {/* KPI Mini-cards */}
+              <Row gutter={[16, 16]}>
+                <Col xs={12} sm={6}>
+                  <Card className="shadow-xs border-slate-200">
+                    <Statistic
+                      title={<span className="text-xs uppercase text-slate-500 font-medium">Lượt chấm công</span>}
+                      value={companyAttendance.length}
+                      prefix={<FieldTimeOutlined className="text-blue-500 mr-2" />}
+                      styles={{ content: { fontWeight: 700, color: "#1e293b" } }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Card className="shadow-xs border-slate-200">
+                    <Statistic
+                      title={<span className="text-xs uppercase text-slate-500 font-medium">{t.dashboard.presentOnTime}</span>}
+                      value={presentCount}
+                      prefix={<CheckCircleOutlined className="text-emerald-500 mr-2" />}
+                      styles={{ content: { fontWeight: 700, color: "#059669" } }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Card className="shadow-xs border-slate-200">
+                    <Statistic
+                      title={<span className="text-xs uppercase text-slate-500 font-medium">{t.dashboard.lateArrival}</span>}
+                      value={lateCount}
+                      prefix={<ClockCircleOutlined className="text-amber-500 mr-2" />}
+                      styles={{ content: { fontWeight: 700, color: "#d97706" } }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Card className="shadow-xs border-slate-200">
+                    <Statistic
+                      title={<span className="text-xs uppercase text-slate-500 font-medium">Tổng giờ công ghi nhận</span>}
+                      value={`${totalHours}h`}
+                      prefix={<DashboardOutlined className="text-indigo-500 mr-2" />}
+                      styles={{ content: { fontWeight: 700, color: "#4f46e5" } }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+
+              {/* Filter bar */}
+              <Card className="shadow-xs border-slate-200">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <RangePicker
+                      value={dateRange}
+                      onChange={(dates) => {
+                        if (dates && dates[0] && dates[1]) {
+                          setDateRange([dates[0], dates[1]]);
+                          setPage(1);
+                        }
+                      }}
+                      format="DD/MM/YYYY"
+                      allowClear={false}
+                      className="w-64"
+                    />
+
+                    <Select
+                      value={statusFilter}
+                      onChange={(val) => {
+                        setStatusFilter(val);
+                        setPage(1);
+                      }}
+                      className="w-48"
+                      options={[
+                        { label: t.attendance.filterAllStatuses, value: "ALL" },
+                        { label: t.attendance.statusOnTime, value: "PRESENT" },
+                        { label: t.attendance.statusLate, value: "LATE" },
+                        { label: t.attendance.statusHalfDay, value: "HALF_DAY" },
+                        { label: t.attendance.statusEarlyLeave, value: "EARLY_LEAVE" },
+                        { label: t.attendance.statusAbsent, value: "ABSENT" },
+                      ]}
+                    />
                   </div>
 
                   <Button
-                    type="primary"
-                    icon={<DownloadOutlined />}
-                    onClick={handleExportExcel}
-                    className="!bg-emerald-600 hover:!bg-emerald-500 font-medium self-start sm:self-center"
+                    icon={<ReloadOutlined />}
+                    onClick={() => refetchCompany()}
+                    loading={isLoadingCompany}
                   >
-                    {t.attendance.exportExcel}
+                    {t.common.reset}
                   </Button>
                 </div>
+              </Card>
 
-                {/* KPI Mini-cards */}
-                <Row gutter={[16, 16]}>
-                  <Col xs={12} sm={6}>
-                    <Card className="shadow-xs border-slate-200">
-                      <Statistic
-                        title={<span className="text-xs uppercase text-slate-500 font-medium">Lượt chấm công</span>}
-                        value={companyAttendance.length}
-                        prefix={<FieldTimeOutlined className="text-blue-500 mr-2" />}
-                        styles={{ content: { fontWeight: 700, color: "#1e293b" } }}
-                      />
-                    </Card>
-                  </Col>
-                  <Col xs={12} sm={6}>
-                    <Card className="shadow-xs border-slate-200">
-                      <Statistic
-                        title={<span className="text-xs uppercase text-slate-500 font-medium">{t.dashboard.presentOnTime}</span>}
-                        value={presentCount}
-                        prefix={<CheckCircleOutlined className="text-emerald-500 mr-2" />}
-                        styles={{ content: { fontWeight: 700, color: "#059669" } }}
-                      />
-                    </Card>
-                  </Col>
-                  <Col xs={12} sm={6}>
-                    <Card className="shadow-xs border-slate-200">
-                      <Statistic
-                        title={<span className="text-xs uppercase text-slate-500 font-medium">{t.dashboard.lateArrival}</span>}
-                        value={lateCount}
-                        prefix={<ClockCircleOutlined className="text-amber-500 mr-2" />}
-                        styles={{ content: { fontWeight: 700, color: "#d97706" } }}
-                      />
-                    </Card>
-                  </Col>
-                  <Col xs={12} sm={6}>
-                    <Card className="shadow-xs border-slate-200">
-                      <Statistic
-                        title={<span className="text-xs uppercase text-slate-500 font-medium">Tổng giờ công ghi nhận</span>}
-                        value={`${totalHours}h`}
-                        prefix={<DashboardOutlined className="text-indigo-500 mr-2" />}
-                        styles={{ content: { fontWeight: 700, color: "#4f46e5" } }}
-                      />
-                    </Card>
-                  </Col>
-                </Row>
-
-                {/* Filter bar */}
-                <Card className="shadow-xs border-slate-200">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <RangePicker
-                        value={dateRange}
-                        onChange={(dates) => {
-                          if (dates && dates[0] && dates[1]) {
-                            setDateRange([dates[0], dates[1]]);
-                            setPage(1);
-                          }
-                        }}
-                        format="DD/MM/YYYY"
-                        allowClear={false}
-                        className="w-64"
-                      />
-
-                      <Select
-                        value={statusFilter}
-                        onChange={(val) => {
-                          setStatusFilter(val);
-                          setPage(1);
-                        }}
-                        className="w-48"
-                        options={[
-                          { label: t.attendance.filterAllStatuses, value: "ALL" },
-                          { label: t.attendance.statusOnTime, value: "PRESENT" },
-                          { label: t.attendance.statusLate, value: "LATE" },
-                          { label: t.attendance.statusHalfDay, value: "HALF_DAY" },
-                          { label: t.attendance.statusEarlyLeave, value: "EARLY_LEAVE" },
-                          { label: t.attendance.statusAbsent, value: "ABSENT" },
-                        ]}
-                      />
-                    </div>
-
-                    <Button
-                      icon={<ReloadOutlined />}
-                      onClick={() => refetchCompany()}
-                      loading={isLoadingCompany}
-                    >
-                      {t.common.reset}
-                    </Button>
-                  </div>
-                </Card>
-
-                {/* Data Table */}
-                <Card className="shadow-xs border-slate-200">
-                  <Table<AttendanceRecord>
-                    columns={columns}
-                    dataSource={companyAttendance}
-                    rowKey="id"
-                    loading={isLoadingCompany}
-                    pagination={{
-                      current: page,
-                      pageSize: pageSize,
-                      total: totalCount || companyAttendance.length,
-                      showSizeChanger: true,
-                      pageSizeOptions: ["10", "15", "25", "50"],
-                      onChange: (p, ps) => {
-                        setPage(p);
-                        setPageSize(ps);
-                      },
-                    }}
-                    scroll={{ x: 900, y: 480 }}
-                  />
-                </Card>
-              </div>
-            ),
-          },
-        ]
+              {/* Data Table */}
+              <Card className="shadow-xs border-slate-200">
+                <Table<AttendanceRecord>
+                  columns={columns}
+                  dataSource={companyAttendance}
+                  rowKey="id"
+                  loading={isLoadingCompany}
+                  pagination={{
+                    current: page,
+                    pageSize: pageSize,
+                    total: totalCount || companyAttendance.length,
+                    showSizeChanger: true,
+                    pageSizeOptions: ["10", "15", "25", "50"],
+                    onChange: (p, ps) => {
+                      setPage(p);
+                      setPageSize(ps);
+                    },
+                  }}
+                  scroll={{ x: 900, y: 480 }}
+                />
+              </Card>
+            </div>
+          ),
+        },
+      ]
       : []),
   ];
 
