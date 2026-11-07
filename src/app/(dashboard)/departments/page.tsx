@@ -171,6 +171,7 @@ export default function DepartmentsPage() {
             rowKey="id"
             loading={isLoading}
             pagination={false}
+            scroll={{ x: 700, y: 460 }}
           />
         </Card>
 

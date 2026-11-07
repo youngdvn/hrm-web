@@ -47,6 +47,36 @@ export interface ExpiringContractItem {
   } | null;
 }
 
+export interface WeeklyAttendanceItem {
+  date: string;
+  displayDate: string;
+  dayOfWeek: string;
+  present: number;
+  late: number;
+  halfDay: number;
+  absent: number;
+  total: number;
+}
+
+export interface MonthlyHiringItem {
+  monthKey: string;
+  displayMonth: string;
+  newHires: number;
+}
+
+export interface ContractTypeStat {
+  contractType: string;
+  count: number;
+}
+
+export interface DepartmentSalaryStat {
+  departmentId: string;
+  departmentName: string;
+  totalSalary: number;
+  avgSalary: number;
+  contractCount: number;
+}
+
 export interface DashboardStats {
   overview: DashboardOverview;
   attendanceToday: AttendanceTodayStats;
@@ -54,5 +84,8 @@ export interface DashboardStats {
   employeeStatus: EmployeeStatusCount[];
   genderDistribution: GenderDistributionCount[];
   expiringContracts: ExpiringContractItem[];
+  weeklyAttendanceTrend?: WeeklyAttendanceItem[];
+  monthlyHiringTrend?: MonthlyHiringItem[];
+  contractTypes?: ContractTypeStat[];
+  departmentSalaries?: DepartmentSalaryStat[];
 }
-

@@ -167,6 +167,7 @@ export default function AuditLogsPage() {
             dataSource={logs}
             rowKey="id"
             loading={isLoading}
+            scroll={{ x: 800, y: 480 }}
             pagination={{
               current: meta?.page || page,
               pageSize: meta?.limit || limit,

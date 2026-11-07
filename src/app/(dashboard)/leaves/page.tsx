@@ -318,6 +318,7 @@ export default function LeavesPage() {
                   rowKey="id"
                   loading={isLoadingMyLeaves}
                   pagination={{ pageSize: 10 }}
+                  scroll={{ x: 800, y: 450 }}
                 />
               ),
             },
@@ -336,6 +337,7 @@ export default function LeavesPage() {
                         pageSize: meta?.limit || 10,
                         total: meta?.total || 0,
                       }}
+                      scroll={{ x: 900, y: 450 }}
                     />
                   ),
                 },

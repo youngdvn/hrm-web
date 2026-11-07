@@ -322,7 +322,7 @@ export default function EmployeesPage() {
           dataSource={employees}
           rowKey="id"
           loading={isLoading}
-          scroll={{ x: 900 }}
+          scroll={{ x: 900, y: 480 }}
           pagination={{
             current: meta?.page || page,
             pageSize: meta?.limit || limit,

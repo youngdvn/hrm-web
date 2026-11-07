@@ -7,6 +7,8 @@ export interface TranslationContent {
     departments: string;
     positions: string;
     attendance: string;
+    timesheet: string;
+    punchClock: string;
     leaves: string;
     payroll: string;
     contracts: string;
@@ -135,6 +137,36 @@ export interface TranslationContent {
     myPayslipsDesc: string;
     profileSecurity: string;
     profileSecurityDesc: string;
+    todayAttendance: string;
+    attendanceRate: string;
+    presentOnTime: string;
+    lateArrival: string;
+    halfDay: string;
+    notArrived: string;
+    quickApproval: string;
+    pendingRequests: string;
+    noPendingLeaves: string;
+    noPendingLeavesDesc: string;
+    viewAllLeaves: string;
+    viewTimesheet: string;
+    quickApprove: string;
+    quickReject: string;
+    confirmApprove: string;
+    companyTimesheet: string;
+    companyTimesheetDesc: string;
+    actionableAlerts: string;
+    contractsExpiringWarning: string;
+    manageNow: string;
+    reviewNow: string;
+    genderRatioTitle: string;
+    weeklyAttendanceTitle: string;
+    monthlyHiringTitle: string;
+    contractTypesTitle: string;
+    departmentSalaryTitle: string;
+    totalMonthlySalary: string;
+    newHiresLabel: string;
+    avgSalaryLabel: string;
+    diversityStats: string;
   };
   department: {
     title: string;
@@ -204,6 +236,26 @@ export interface TranslationContent {
     clockInLateSuccess: string;
     clockInOnTimeSuccess: string;
     totalWorkHoursLabel: string;
+    companyAttendanceTitle: string;
+    punchIn: string;
+    punchInSub: string;
+    punchOut: string;
+    punchOutSub: string;
+    punchCompleted: string;
+    todayShiftFinished: string;
+    workHoursCompleted: string;
+    clockedInAt: string;
+    totalWorkDays: string;
+    onTimeBadge: string;
+    lateBadge: string;
+    overtimeBadge: string;
+    checkInShort: string;
+    checkOutShort: string;
+    companyAttendanceManagement: string;
+    companyAttendanceDesc: string;
+    exportSuccess: string;
+    openPunchWebApp: string;
+    filterAllStatuses: string;
   };
   leave: {
     title: string;
@@ -379,6 +431,8 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       departments: "Phòng ban",
       positions: "Chức vụ",
       attendance: "Chấm công",
+      timesheet: "Quản lý Bảng công",
+      punchClock: "Chấm công Web-App",
       leaves: "Nghỉ phép",
       payroll: "Tính lương",
       contracts: "Hợp đồng lao động",
@@ -507,6 +561,36 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       myPayslipsDesc: "Tra cứu chi tiết thu nhập",
       profileSecurity: "Hồ sơ & Bảo mật",
       profileSecurityDesc: "Đổi mật khẩu, xem hồ sơ",
+      todayAttendance: "Tình hình Chấm công Hôm nay (Real-time)",
+      attendanceRate: "Tỉ lệ có mặt",
+      presentOnTime: "Đúng giờ",
+      lateArrival: "Đi muộn",
+      halfDay: "Nửa ngày",
+      notArrived: "Chưa có mặt",
+      quickApproval: "Trung tâm Phê duyệt Nhanh",
+      pendingRequests: "Đơn chờ duyệt",
+      noPendingLeaves: "Không có đơn từ nào cần duyệt",
+      noPendingLeavesDesc: "Tuyệt vời! Tất cả đơn xin nghỉ phép đã được xử lý xong.",
+      viewAllLeaves: "Xem tất cả đơn từ",
+      viewTimesheet: "Xem bảng công chi tiết",
+      quickApprove: "Duyệt nhanh",
+      quickReject: "Từ chối",
+      confirmApprove: "Xác nhận duyệt đơn nghỉ của",
+      companyTimesheet: "Bảng chấm công toàn công ty",
+      companyTimesheetDesc: "Theo dõi tình hình làm việc hàng ngày của nhân viên",
+      actionableAlerts: "Cảnh báo & Nhắc việc quan trọng",
+      contractsExpiringWarning: "hợp đồng lao động sắp hết hạn trong 30 ngày tới cần được xử lý.",
+      manageNow: "Xử lý ngay",
+      reviewNow: "Xem xét ngay",
+      genderRatioTitle: "Cơ cấu Giới tính & Đa dạng",
+      weeklyAttendanceTitle: "Xu hướng Chấm công 7 ngày gần nhất",
+      monthlyHiringTitle: "Xu hướng Tăng trưởng & Tuyển dụng 6 tháng",
+      contractTypesTitle: "Cơ cấu Loại Hợp đồng Lao động",
+      departmentSalaryTitle: "Phân bổ Ngân sách Lương theo Phòng ban",
+      totalMonthlySalary: "Tổng quỹ lương cơ bản",
+      newHiresLabel: "Tuyển mới",
+      avgSalaryLabel: "Lương TB",
+      diversityStats: "Chỉ số bình đẳng",
     },
     department: {
       title: "Quản lý Phòng ban",
@@ -576,6 +660,26 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       clockInLateSuccess: "Check-in thành công (Ghi nhận đi muộn)",
       clockInOnTimeSuccess: "Check-in thành công đúng giờ!",
       totalWorkHoursLabel: "Tổng giờ làm",
+      companyAttendanceTitle: "Chấm công toàn công ty",
+      punchIn: "VÀO CA",
+      punchInSub: "Chạm để chấm công",
+      punchOut: "TAN CA",
+      punchOutSub: "Chạm để kết thúc ca",
+      punchCompleted: "ĐÃ XONG CA",
+      todayShiftFinished: "Đã hoàn thành ca làm",
+      workHoursCompleted: "công",
+      clockedInAt: "Đã vào ca lúc",
+      totalWorkDays: "Ngày công",
+      onTimeBadge: "Đúng giờ",
+      lateBadge: "Đi muộn",
+      overtimeBadge: "Tăng ca",
+      checkInShort: "Vào",
+      checkOutShort: "Ra",
+      companyAttendanceManagement: "Quản lý Chấm công & Bảng công",
+      companyAttendanceDesc: "Bảng tổng hợp dữ liệu chấm công toàn bộ nhân sự theo ngày, tháng",
+      exportSuccess: "Xuất dữ liệu Excel thành công",
+      openPunchWebApp: "Mở Web-App Chấm công cá nhân (PWA)",
+      filterAllStatuses: "Tất cả trạng thái",
     },
     leave: {
       title: "Quản lý Nghỉ phép",
@@ -749,6 +853,8 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       departments: "Departments",
       positions: "Positions",
       attendance: "Attendance",
+      timesheet: "Timesheets",
+      punchClock: "Punch Web-App",
       leaves: "Leaves",
       payroll: "Payroll",
       contracts: "Employment Contracts",
@@ -877,6 +983,36 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       myPayslipsDesc: "View earnings and deduction breakdown",
       profileSecurity: "Profile & Security",
       profileSecurityDesc: "Change password and view profile info",
+      todayAttendance: "Today's Attendance Status (Real-time)",
+      attendanceRate: "Attendance Rate",
+      presentOnTime: "On Time",
+      lateArrival: "Late Arrival",
+      halfDay: "Half Day",
+      notArrived: "Not Arrived",
+      quickApproval: "Quick Approval Center",
+      pendingRequests: "Pending Requests",
+      noPendingLeaves: "No pending requests",
+      noPendingLeavesDesc: "Great! All leave requests have been reviewed.",
+      viewAllLeaves: "View All Requests",
+      viewTimesheet: "View Detailed Timesheet",
+      quickApprove: "Quick Approve",
+      quickReject: "Reject",
+      confirmApprove: "Confirm approval of leave for",
+      companyTimesheet: "Company Timesheet",
+      companyTimesheetDesc: "Monitor daily employee attendance and work hours",
+      actionableAlerts: "Actionable Alerts & Reminders",
+      contractsExpiringWarning: "employment contracts are expiring within the next 30 days.",
+      manageNow: "Manage Now",
+      reviewNow: "Review Now",
+      genderRatioTitle: "Gender & Diversity Ratio",
+      weeklyAttendanceTitle: "7-Day Attendance Trend",
+      monthlyHiringTitle: "6-Month Hiring & Headcount Trend",
+      contractTypesTitle: "Employment Contract Types",
+      departmentSalaryTitle: "Salary Budget by Department",
+      totalMonthlySalary: "Total Base Payroll",
+      newHiresLabel: "New Hires",
+      avgSalaryLabel: "Avg Salary",
+      diversityStats: "Diversity Index",
     },
     department: {
       title: "Department Management",
@@ -946,6 +1082,26 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       clockInLateSuccess: "Clock-in successful (Recorded as late)",
       clockInOnTimeSuccess: "Clock-in successful on time!",
       totalWorkHoursLabel: "Total working hours",
+      companyAttendanceTitle: "Company Attendance",
+      punchIn: "PUNCH IN",
+      punchInSub: "Tap to clock in",
+      punchOut: "PUNCH OUT",
+      punchOutSub: "Tap to clock out",
+      punchCompleted: "COMPLETED",
+      todayShiftFinished: "Today's shift completed",
+      workHoursCompleted: "shift",
+      clockedInAt: "Clocked in at",
+      totalWorkDays: "Work Days",
+      onTimeBadge: "On Time",
+      lateBadge: "Late",
+      overtimeBadge: "Overtime",
+      checkInShort: "In",
+      checkOutShort: "Out",
+      companyAttendanceManagement: "Attendance & Timesheet Management",
+      companyAttendanceDesc: "Comprehensive employee daily and monthly attendance records",
+      exportSuccess: "Successfully exported to Excel format",
+      openPunchWebApp: "Open Personal Punch Web-App (PWA)",
+      filterAllStatuses: "All Statuses",
     },
     leave: {
       title: "Leave Management",

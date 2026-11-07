@@ -270,6 +270,7 @@ export default function ContractsPage() {
             rowKey="id"
             loading={isLoading}
             pagination={{ pageSize: 10 }}
+            scroll={{ x: 900, y: 480 }}
           />
         </Card>
 

@@ -276,6 +276,7 @@ export default function PayrollPage() {
                       rowKey="id"
                       loading={isLoadingPeriods}
                       pagination={{ pageSize: 10 }}
+                      scroll={{ x: 800, y: 450 }}
                     />
                   ),
                 },
@@ -291,6 +292,7 @@ export default function PayrollPage() {
                   rowKey="id"
                   loading={isLoadingMyPayslips}
                   pagination={{ pageSize: 10 }}
+                  scroll={{ x: 800, y: 450 }}
                 />
               ),
             },

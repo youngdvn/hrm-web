@@ -12,7 +12,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <RoleGuard>
+    <RoleGuard allowedRoles={["ADMIN", "HR", "MANAGER", "EMPLOYEE"]}>
       <Layout className="h-screen">
         <Sidebar collapsed={collapsed} onCollapse={setCollapsed} />
         <Layout className="flex flex-col min-h-screen bg-slate-50">

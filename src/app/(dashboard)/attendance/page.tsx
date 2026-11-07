@@ -1,151 +1,263 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   Table,
+  Button,
   Tag,
-  Tabs,
-  Typography,
   Select,
+  DatePicker,
+  Row,
+  Col,
+  Statistic,
+  Avatar,
+  Typography,
+  Tabs,
 } from "antd";
+import {
+  DownloadOutlined,
+  ReloadOutlined,
+  FieldTimeOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  DashboardOutlined,
+  UserOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useAttendance } from "@/hooks/useAttendance";
 import { useAuthStore } from "@/stores/auth.store";
 import { useI18nStore } from "@/stores/i18n.store";
+import { RoleGuard } from "@/components/common/RoleGuard";
 import { AttendanceRecord, AttendanceStatus } from "@/types/attendance.types";
-import { AttendanceClockCard } from "@/components/attendance/AttendanceClockCard";
+import { message } from "@/lib/antd-app";
+import { MyAttendanceTab } from "@/components/attendance/MyAttendanceTab";
 
+const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
-const { Option } = Select;
 
 export default function AttendancePage() {
-  const { t, locale } = useI18nStore();
+  const { t } = useI18nStore();
   const { hasRole } = useAuthStore();
-  const isManagerOrAdmin = hasRole(["ADMIN", "HR", "MANAGER"]);
+  const isManagerOrAbove = hasRole(["ADMIN", "HR", "MANAGER"]);
 
-  const [currentTime, setCurrentTime] = useState<string>("");
-  const [currentDate, setCurrentDate] = useState<string>("");
-  const [notes, setNotes] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("my-attendance");
 
+  // Filter states for company timesheet
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+    dayjs().startOf("month"),
+    dayjs().endOf("month"),
+  ]);
+  const [statusFilter, setStatusFilter] = useState<AttendanceStatus | "ALL">("ALL");
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(15);
-  const [statusFilter, setStatusFilter] = useState<AttendanceStatus | undefined>(undefined);
+  const [pageSize, setPageSize] = useState(15);
 
-  useEffect(() => {
-    const updateTime = () => {
-      const now = dayjs().locale(locale);
-      setCurrentTime(now.format("HH:mm:ss"));
-      const rawDate = now.format("dddd, DD/MM/YYYY");
-      setCurrentDate(rawDate.charAt(0).toUpperCase() + rawDate.slice(1));
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, [locale]);
-
-  const {
-    myHistory,
-    isLoadingMyHistory,
-    companyAttendance,
-    meta,
-    isLoadingCompany,
-    checkIn,
-    isCheckingIn,
-    checkOut,
-    isCheckingOut,
-  } = useAttendance({
+  const queryParams = {
     page,
-    limit,
-    status: statusFilter,
-  });
-
-  const todayStr = dayjs().format("YYYY-MM-DD");
-  const todayRecord = myHistory.find((r) => {
-    const recordDate = dayjs(r.date).format("YYYY-MM-DD");
-    const checkInDate = r.checkInTime || r.checkIn ? dayjs(r.checkInTime || r.checkIn).format("YYYY-MM-DD") : null;
-    return recordDate === todayStr || checkInDate === todayStr || (r.date && r.date.startsWith(todayStr));
-  });
-
-  const isCheckedIn = !!(todayRecord?.checkInTime || todayRecord?.checkIn);
-  const isCheckedOut = !!(todayRecord?.checkOutTime || todayRecord?.checkOut);
-
-  const statusColorMap: Record<AttendanceStatus, string> = {
-    PRESENT: "green",
-    LATE: "orange",
-    EARLY_LEAVE: "gold",
-    HALF_DAY: "blue",
-    ABSENT: "red",
+    limit: pageSize,
+    startDate: dateRange[0]?.format("YYYY-MM-DD"),
+    endDate: dateRange[1]?.format("YYYY-MM-DD"),
+    status: statusFilter !== "ALL" ? statusFilter : undefined,
   };
 
-  const statusLabelMap: Record<AttendanceStatus, string> = {
-    PRESENT: t.attendance.statusOnTime,
-    LATE: t.attendance.statusLate,
-    EARLY_LEAVE: t.attendance.statusEarlyLeave,
-    HALF_DAY: t.attendance.statusHalfDay,
-    ABSENT: t.attendance.statusAbsent,
+  const { companyAttendance, totalCount, isLoadingCompany, refetchCompany } =
+    useAttendance(queryParams);
+
+  // Status tag mapper
+  const renderStatusTag = (status: AttendanceStatus) => {
+    switch (status) {
+      case "PRESENT":
+        return <Tag color="success">{t.attendance.statusOnTime}</Tag>;
+      case "LATE":
+        return <Tag color="warning">{t.attendance.statusLate}</Tag>;
+      case "HALF_DAY":
+        return <Tag color="purple">{t.attendance.statusHalfDay}</Tag>;
+      case "EARLY_LEAVE":
+        return <Tag color="processing">{t.attendance.statusEarlyLeave}</Tag>;
+      case "ABSENT":
+        return <Tag color="error">{t.attendance.statusAbsent}</Tag>;
+      default:
+        return <Tag>{status}</Tag>;
+    }
+  };
+
+  // Quick stats summary
+  const presentCount = companyAttendance.filter((r) => r.status === "PRESENT").length;
+  const lateCount = companyAttendance.filter((r) => r.status === "LATE").length;
+  const halfDayCount = companyAttendance.filter((r) => r.status === "HALF_DAY").length;
+  const totalHours = companyAttendance
+    .reduce((acc, cur) => acc + (cur.workHours || cur.workingHours || 0), 0)
+    .toFixed(1);
+
+  // Export to CSV with UTF-8 BOM for Microsoft Excel
+  const handleExportExcel = () => {
+    if (companyAttendance.length === 0) {
+      message.warning(t.attendance.noRecords);
+      return;
+    }
+
+    const headers = [
+      "Mã NV",
+      "Họ và tên",
+      "Phòng ban",
+      "Ngày",
+      "Giờ vào",
+      "Giờ ra",
+      "Giờ làm việc (h)",
+      "Tăng ca (h)",
+      "Trạng thái",
+      "Ghi chú",
+    ];
+
+    const rows = companyAttendance.map((r) => {
+      const empName = r.employee
+        ? `${r.employee.lastName} ${r.employee.firstName}`
+        : "N/A";
+      const empCode = r.employee?.employeeCode || "N/A";
+      const deptName = r.employee?.department?.name || "N/A";
+      const dateStr = dayjs(r.date).format("DD/MM/YYYY");
+      const inTime = r.checkIn || r.checkInTime ? dayjs(r.checkIn || r.checkInTime).format("HH:mm:ss") : "--:--";
+      const outTime = r.checkOut || r.checkOutTime ? dayjs(r.checkOut || r.checkOutTime).format("HH:mm:ss") : "--:--";
+      const hours = r.workHours ?? r.workingHours ?? 0;
+      const ot = r.overtimeHours ?? r.otHours ?? 0;
+      const statusText =
+        r.status === "PRESENT"
+          ? "Đúng giờ"
+          : r.status === "LATE"
+            ? "Đi muộn"
+            : r.status === "HALF_DAY"
+              ? "Nửa ngày"
+              : r.status === "EARLY_LEAVE"
+                ? "Về sớm"
+                : "Vắng mặt";
+      const notes = (r.notes || "").replace(/"/g, '""');
+
+      return [
+        `"${empCode}"`,
+        `"${empName}"`,
+        `"${deptName}"`,
+        `"${dateStr}"`,
+        `"${inTime}"`,
+        `"${outTime}"`,
+        `"${hours}"`,
+        `"${ot}"`,
+        `"${statusText}"`,
+        `"${notes}"`,
+      ].join(",");
+    });
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `Bang_Cham_Cong_${dayjs().format("YYYYMMDD_HHmmss")}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    message.success(t.attendance.exportSuccess);
   };
 
   const columns: ColumnsType<AttendanceRecord> = [
     {
+      title: t.common.employees,
+      key: "employee",
+      width: 240,
+      render: (_, record) => {
+        const empName = record.employee
+          ? `${record.employee.lastName} ${record.employee.firstName}`
+          : t.common.unassigned;
+        const empInitial = record.employee?.firstName?.[0] || "U";
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar
+              size={36}
+              className="bg-blue-600 text-white font-semibold shrink-0"
+              icon={<UserOutlined />}
+            >
+              {empInitial}
+            </Avatar>
+            <div className="min-w-0">
+              <div className="font-semibold text-slate-800 text-sm">{empName}</div>
+              <div className="text-xs text-slate-400">
+                {record.employee?.employeeCode} • {record.employee?.department?.name || t.common.unassigned}
+              </div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
       title: t.common.date,
       dataIndex: "date",
       key: "date",
-      width: 130,
-      render: (date) => (
-        <span className="font-medium text-slate-800">
-          {dayjs(date).format("DD/MM/YYYY")}
-        </span>
+      width: 120,
+      render: (val: string) => (
+        <span className="font-medium text-slate-700">{dayjs(val).format("DD/MM/YYYY")}</span>
       ),
     },
     {
       title: t.attendance.checkInTime,
       key: "checkIn",
-      width: 140,
-      render: (_, r) => {
-        const inTime = r.checkInTime || r.checkIn;
-        return (
-          <span className="text-emerald-600 font-semibold">
-            {inTime ? dayjs(inTime).format("HH:mm:ss") : "---"}
+      width: 110,
+      render: (_, record) => {
+        const time = record.checkIn || record.checkInTime;
+        return time ? (
+          <span className="font-mono text-slate-800 font-medium">
+            {dayjs(time).format("HH:mm:ss")}
           </span>
+        ) : (
+          <span className="text-slate-400">--:--</span>
         );
       },
     },
     {
       title: t.attendance.checkOutTime,
       key: "checkOut",
-      width: 140,
-      render: (_, r) => {
-        const outTime = r.checkOutTime || r.checkOut;
-        return (
-          <span className="text-blue-600 font-semibold">
-            {outTime ? dayjs(outTime).format("HH:mm:ss") : "---"}
+      width: 110,
+      render: (_, record) => {
+        const time = record.checkOut || record.checkOutTime;
+        return time ? (
+          <span className="font-mono text-slate-800 font-medium">
+            {dayjs(time).format("HH:mm:ss")}
           </span>
+        ) : (
+          <span className="text-slate-400">--:--</span>
         );
       },
     },
     {
       title: t.attendance.workHours,
       key: "workHours",
-      width: 120,
-      render: (_, r) => {
-        const hours = r.workingHours ?? r.workHours;
-        return hours !== null && hours !== undefined ? `${hours} ${t.attendance.hoursUnit}` : "---";
+      width: 110,
+      render: (_, record) => {
+        const hours = record.workHours ?? record.workingHours;
+        return hours !== null && hours !== undefined ? (
+          <span className="font-semibold text-slate-800">{hours}h</span>
+        ) : (
+          <span className="text-slate-400">0h</span>
+        );
       },
     },
     {
       title: t.attendance.overtime,
-      key: "overtime",
-      width: 125,
-      render: (_, r) => {
-        const ot = r.overtimeHours ?? r.otHours;
-        return ot && ot > 0 ? (
-          <Tag color="purple" className="font-semibold !px-2 !py-0.5">
-            +{ot}h {t.attendance.overtime}
+      key: "overtimeHours",
+      width: 100,
+      render: (_, record) => {
+        const ot = record.overtimeHours ?? record.otHours ?? 0;
+        return ot > 0 ? (
+          <Tag color="volcano" className="font-medium font-mono">
+            +{ot}h
           </Tag>
         ) : (
-          <span className="text-slate-400">---</span>
+          <span className="text-slate-400 text-xs">-</span>
         );
       },
     },
@@ -154,132 +266,194 @@ export default function AttendancePage() {
       dataIndex: "status",
       key: "status",
       width: 130,
-      render: (st: AttendanceStatus) => (
-        <Tag color={statusColorMap[st] || "default"}>
-          {statusLabelMap[st] || st}
-        </Tag>
-      ),
+      render: (status: AttendanceStatus) => renderStatusTag(status),
     },
     {
       title: t.common.notes,
       dataIndex: "notes",
       key: "notes",
-      render: (n) => n || <Text type="secondary">---</Text>,
+      ellipsis: true,
+      render: (notes: string | null) => (
+        <span className="text-xs text-slate-500">{notes || "-"}</span>
+      ),
     },
   ];
 
-  const companyColumns: ColumnsType<AttendanceRecord> = [
+  const tabItems = [
     {
-      title: t.employee.title,
-      key: "employee",
-      render: (_, r) => (
-        <div>
-          <div className="font-semibold text-slate-800">
-            {r.employee?.lastName} {r.employee?.firstName}
-          </div>
-          <div className="text-xs text-slate-400">
-            {r.employee?.employeeCode} • {r.employee?.department?.name || "---"}
-          </div>
-        </div>
+      key: "my-attendance",
+      label: (
+        <span className="flex items-center gap-2">
+          <FieldTimeOutlined /> {t.attendance.myHistoryTab}
+        </span>
       ),
+      children: <MyAttendanceTab />,
     },
-    ...columns,
+    ...(isManagerOrAbove
+      ? [
+        {
+          key: "company-attendance",
+          label: (
+            <span className="flex items-center gap-2">
+              <CalendarOutlined /> {t.attendance.companyAttendanceTab}
+            </span>
+          ),
+          children: (
+            <div className="space-y-6 pt-2">
+              {/* Header & Export Action */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800 mb-0.5">
+                    {t.attendance.companyAttendanceManagement}
+                  </h2>
+                  <p className="text-xs text-slate-500">{t.attendance.companyAttendanceDesc}</p>
+                </div>
+
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  onClick={handleExportExcel}
+                  className="!bg-emerald-600 hover:!bg-emerald-500 font-medium self-start sm:self-center"
+                >
+                  {t.attendance.exportExcel}
+                </Button>
+              </div>
+
+              {/* KPI Mini-cards */}
+              <Row gutter={[16, 16]}>
+                <Col xs={12} sm={6}>
+                  <Card className="shadow-xs border-slate-200">
+                    <Statistic
+                      title={<span className="text-xs uppercase text-slate-500 font-medium">Lượt chấm công</span>}
+                      value={companyAttendance.length}
+                      prefix={<FieldTimeOutlined className="text-blue-500 mr-2" />}
+                      styles={{ content: { fontWeight: 700, color: "#1e293b" } }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Card className="shadow-xs border-slate-200">
+                    <Statistic
+                      title={<span className="text-xs uppercase text-slate-500 font-medium">{t.dashboard.presentOnTime}</span>}
+                      value={presentCount}
+                      prefix={<CheckCircleOutlined className="text-emerald-500 mr-2" />}
+                      styles={{ content: { fontWeight: 700, color: "#059669" } }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Card className="shadow-xs border-slate-200">
+                    <Statistic
+                      title={<span className="text-xs uppercase text-slate-500 font-medium">{t.dashboard.lateArrival}</span>}
+                      value={lateCount}
+                      prefix={<ClockCircleOutlined className="text-amber-500 mr-2" />}
+                      styles={{ content: { fontWeight: 700, color: "#d97706" } }}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Card className="shadow-xs border-slate-200">
+                    <Statistic
+                      title={<span className="text-xs uppercase text-slate-500 font-medium">Tổng giờ công ghi nhận</span>}
+                      value={`${totalHours}h`}
+                      prefix={<DashboardOutlined className="text-indigo-500 mr-2" />}
+                      styles={{ content: { fontWeight: 700, color: "#4f46e5" } }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+
+              {/* Filter bar */}
+              <Card className="shadow-xs border-slate-200">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <RangePicker
+                      value={dateRange}
+                      onChange={(dates) => {
+                        if (dates && dates[0] && dates[1]) {
+                          setDateRange([dates[0], dates[1]]);
+                          setPage(1);
+                        }
+                      }}
+                      format="DD/MM/YYYY"
+                      allowClear={false}
+                      className="w-64"
+                    />
+
+                    <Select
+                      value={statusFilter}
+                      onChange={(val) => {
+                        setStatusFilter(val);
+                        setPage(1);
+                      }}
+                      className="w-48"
+                      options={[
+                        { label: t.attendance.filterAllStatuses, value: "ALL" },
+                        { label: t.attendance.statusOnTime, value: "PRESENT" },
+                        { label: t.attendance.statusLate, value: "LATE" },
+                        { label: t.attendance.statusHalfDay, value: "HALF_DAY" },
+                        { label: t.attendance.statusEarlyLeave, value: "EARLY_LEAVE" },
+                        { label: t.attendance.statusAbsent, value: "ABSENT" },
+                      ]}
+                    />
+                  </div>
+
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => refetchCompany()}
+                    loading={isLoadingCompany}
+                  >
+                    {t.common.reset}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Data Table */}
+              <Card className="shadow-xs border-slate-200">
+                <Table<AttendanceRecord>
+                  columns={columns}
+                  dataSource={companyAttendance}
+                  rowKey="id"
+                  loading={isLoadingCompany}
+                  pagination={{
+                    current: page,
+                    pageSize: pageSize,
+                    total: totalCount || companyAttendance.length,
+                    showSizeChanger: true,
+                    pageSizeOptions: ["10", "15", "25", "50"],
+                    onChange: (p, ps) => {
+                      setPage(p);
+                      setPageSize(ps);
+                    },
+                  }}
+                  scroll={{ x: 900, y: 480 }}
+                />
+              </Card>
+            </div>
+          ),
+        },
+      ]
+      : []),
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Title level={3} className="!mb-1">
-          {t.attendance.title}
-        </Title>
-        <Text type="secondary">{t.attendance.subtitle}</Text>
-      </div>
+    <RoleGuard allowedRoles={["ADMIN", "HR", "MANAGER", "EMPLOYEE"]}>
+      <div className="space-y-6">
+        <div>
+          <Title level={3} className="!mb-1">
+            {t.attendance.title}
+          </Title>
+          <Text type="secondary">{t.attendance.subtitle}</Text>
+        </div>
 
-      <AttendanceClockCard
-        currentDate={currentDate}
-        currentTime={currentTime}
-        notes={notes}
-        setNotes={setNotes}
-        isCheckedIn={isCheckedIn}
-        isCheckedOut={isCheckedOut}
-        isCheckingIn={isCheckingIn}
-        isCheckingOut={isCheckingOut}
-        onCheckIn={async () => {
-          await checkIn(notes);
-          setNotes("");
-        }}
-        onCheckOut={async () => {
-          await checkOut(notes);
-          setNotes("");
-        }}
-      />
-
-      <Card className="shadow-xs border-slate-200">
         <Tabs
-          defaultActiveKey="my"
-          items={[
-            {
-              key: "my",
-              label: t.attendance.myHistoryTab,
-              children: (
-                <Table
-                  columns={columns}
-                  dataSource={myHistory}
-                  rowKey="id"
-                  loading={isLoadingMyHistory}
-                  pagination={{ pageSize: 10 }}
-                />
-              ),
-            },
-            ...(isManagerOrAdmin
-              ? [
-                {
-                  key: "company",
-                  label: t.attendance.companyAttendanceTab,
-                  children: (
-                    <div className="space-y-4 pt-2">
-                      <div className="flex flex-wrap gap-3">
-                        <Select
-                          placeholder={t.attendance.filterByStatus}
-                          value={statusFilter}
-                          onChange={(val) => {
-                            setStatusFilter(val);
-                            setPage(1);
-                          }}
-                          allowClear
-                          className="w-48"
-                        >
-                          <Option value="PRESENT">{t.attendance.statusOnTime}</Option>
-                          <Option value="LATE">{t.attendance.statusLate}</Option>
-                          <Option value="EARLY_LEAVE">{t.attendance.statusEarlyLeave}</Option>
-                          <Option value="HALF_DAY">{t.attendance.statusHalfDay}</Option>
-                          <Option value="ABSENT">{t.attendance.statusAbsent}</Option>
-                        </Select>
-                      </div>
-
-                      <Table
-                        columns={companyColumns}
-                        dataSource={companyAttendance}
-                        rowKey="id"
-                        loading={isLoadingCompany}
-                        pagination={{
-                          current: meta?.page || page,
-                          pageSize: meta?.limit || limit,
-                          total: meta?.total || 0,
-                          onChange: (p, l) => {
-                            setPage(p);
-                            setLimit(l);
-                          },
-                        }}
-                      />
-                    </div>
-                  ),
-                },
-              ]
-              : []),
-          ]}
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={tabItems}
+          type="card"
+          className="bg-white rounded-xl p-4 shadow-xs border border-slate-200"
         />
-      </Card>
-    </div>
+      </div>
+    </RoleGuard>
   );
 }

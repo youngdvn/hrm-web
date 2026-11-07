@@ -157,6 +157,7 @@ export default function PositionsPage() {
             rowKey="id"
             loading={isLoading}
             pagination={false}
+            scroll={{ x: 700, y: 460 }}
           />
         </Card>
 

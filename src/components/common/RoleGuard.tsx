@@ -25,8 +25,16 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
   useEffect(() => {
     if (isMounted && !isAuthenticated) {
       router.replace("/login");
+    } else if (
+      isMounted &&
+      isAuthenticated &&
+      allowedRoles &&
+      allowedRoles.length > 0 &&
+      !hasRole(allowedRoles)
+    ) {
+      router.replace("/");
     }
-  }, [isMounted, isAuthenticated, router]);
+  }, [isMounted, isAuthenticated, allowedRoles, hasRole, router]);
 
   if (!isMounted) {
     return (
@@ -48,8 +56,8 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
           title="403"
           subTitle={t.auth.unauthorized}
           extra={
-            <Button type="primary" onClick={() => router.push("/dashboard")}>
-              {t.common.dashboard}
+            <Button type="primary" onClick={() => router.push("/")}>
+              Về Trang Chấm Công & Tổng Quan
             </Button>
           }
         />

@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/auth.store";
 import { Spin } from "antd";
+import { useAuthStore } from "@/stores/auth.store";
 
 export default function RootPage() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function RootPage() {
   }, [isAuthenticated, router]);
 
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-slate-50">
+    <div className="h-screen flex items-center justify-center bg-slate-50">
       <Spin size="large" />
     </div>
   );

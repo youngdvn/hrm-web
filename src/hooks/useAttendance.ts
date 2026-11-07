@@ -1,5 +1,6 @@
 "use client";
 
+import dayjs from "dayjs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "@/lib/antd-app";
 import { request, parseApiError } from "@/lib/api-client";
@@ -85,12 +86,25 @@ export function useAttendance(params?: AttendanceFilterParams) {
     },
   });
 
+  const myHistory = myHistoryQuery.data || [];
+  const todayStr = dayjs().format("YYYY-MM-DD");
+  const todayRecord = myHistory.find(
+    (r) => dayjs(r.date).format("YYYY-MM-DD") === todayStr
+  );
+  const isCheckedIn = !!(todayRecord?.checkIn || todayRecord?.checkInTime);
+  const isCheckedOut = !!(todayRecord?.checkOut || todayRecord?.checkOutTime);
+
   return {
-    myHistory: myHistoryQuery.data || [],
+    myHistory,
+    todayRecord,
+    isCheckedIn,
+    isCheckedOut,
     isLoadingMyHistory: myHistoryQuery.isLoading,
     companyAttendance: companyAttendanceQuery.data?.items || [],
     meta: companyAttendanceQuery.data?.meta,
+    totalCount: companyAttendanceQuery.data?.meta?.total,
     isLoadingCompany: companyAttendanceQuery.isLoading,
+    refetchCompany: companyAttendanceQuery.refetch,
     checkIn: checkInMutation.mutateAsync,
     isCheckingIn: checkInMutation.isPending,
     checkOut: checkOutMutation.mutateAsync,

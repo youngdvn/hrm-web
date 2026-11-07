@@ -132,7 +132,7 @@ export default function PeriodPayslipsModal({
           rowKey="id"
           loading={isLoadingPayslips}
           pagination={{ pageSize: 10 }}
-          scroll={{ x: 850 }}
+          scroll={{ x: 850, y: 420 }}
         />
       </div>
     </Modal>

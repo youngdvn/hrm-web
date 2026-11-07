@@ -24,6 +24,7 @@ export interface AttendanceRecord {
     employeeCode: string;
     firstName: string;
     lastName: string;
+    avatarUrl?: string | null;
     department?: { name: string } | null;
     position?: { title: string } | null;
   } | null;
