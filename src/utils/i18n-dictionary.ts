@@ -15,6 +15,17 @@ export interface TranslationContent {
     chat: string;
     profile: string;
     auditLogs: string;
+    salesGroup: string;
+    accountingGroup: string;
+    hrmGroup: string;
+    systemGroup: string;
+    customers: string;
+    salesOrders: string;
+    products: string;
+    transactions: string;
+    invoices: string;
+    financialReports: string;
+    settings: string;
     logout: string;
     search: string;
     reset: string;
@@ -439,6 +450,17 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       chat: "Trò chuyện nội bộ",
       profile: "Hồ sơ cá nhân",
       auditLogs: "Nhật ký hệ thống",
+      salesGroup: "BÁN HÀNG & CRM",
+      accountingGroup: "KẾ TOÁN & TÀI CHÍNH",
+      hrmGroup: "QUẢN TRỊ NHÂN SỰ",
+      systemGroup: "HỆ THỐNG",
+      customers: "Khách hàng",
+      salesOrders: "Đơn hàng & Doanh số",
+      products: "Sản phẩm & Dịch vụ",
+      transactions: "Sổ quỹ Thu - Chi",
+      invoices: "Hóa đơn & Công nợ",
+      financialReports: "Báo cáo Tài chính P&L",
+      settings: "Cấu hình hệ thống",
       logout: "Đăng xuất",
       search: "Tìm kiếm",
       reset: "Đặt lại",
@@ -861,6 +883,17 @@ export const translations: Record<"vi" | "en", TranslationContent> = {
       chat: "Internal Chat",
       profile: "Profile",
       auditLogs: "Audit Logs",
+      salesGroup: "SALES & CRM",
+      accountingGroup: "ACCOUNTING & FINANCE",
+      hrmGroup: "HUMAN RESOURCES",
+      systemGroup: "SYSTEM",
+      customers: "Customers",
+      salesOrders: "Orders & Sales",
+      products: "Products & Services",
+      transactions: "Cash & Bank Book",
+      invoices: "Invoices & Receivables",
+      financialReports: "Financial Reports P&L",
+      settings: "System Settings",
       logout: "Log out",
       search: "Search",
       reset: "Reset",

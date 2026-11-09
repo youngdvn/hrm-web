@@ -14,22 +14,38 @@ export function useAuth() {
   const { t } = useI18nStore();
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginCredentials) => {
+    mutationFn: async ({
+      credentials,
+      redirectUrl,
+    }: {
+      credentials: LoginCredentials;
+      redirectUrl?: string | null;
+    }) => {
       const res = await request.post<LoginResponse>("auth/login", credentials);
       if (!res.success) {
         throw new Error(res.message || "Login failed");
       }
-      return res.data;
+      return { data: res.data, redirectUrl };
     },
-    onSuccess: (data) => {
+    onSuccess: ({ data, redirectUrl }) => {
       setAuth(data);
       message.success(t.auth.loginSuccess);
-      router.push("/dashboard");
+      if (redirectUrl !== null && redirectUrl !== undefined) {
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        }
+      } else {
+        router.push("/dashboard");
+      }
     },
     onError: (error: any) => {
       message.error(error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản/mật khẩu.");
     },
   });
+
+  const login = async (credentials: LoginCredentials, redirectUrl?: string | null) => {
+    return loginMutation.mutateAsync({ credentials, redirectUrl });
+  };
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -64,7 +80,7 @@ export function useAuth() {
     user,
     isAuthenticated,
     hasRole,
-    login: loginMutation.mutateAsync,
+    login,
     isLoggingIn: loginMutation.isPending,
     logout: logoutMutation.mutate,
     isLoggingOut: logoutMutation.isPending,

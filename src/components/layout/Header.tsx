@@ -8,6 +8,7 @@ import {
   LogoutOutlined,
   SettingOutlined,
   MessageOutlined,
+  HomeOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18nStore } from "@/stores/i18n.store";
@@ -55,6 +56,12 @@ export function Header({ collapsed, onToggle }: HeaderProps) {
       icon: <UserOutlined />,
       label: t.common.profile,
       onClick: () => router.push("/profile"),
+    },
+    {
+      key: "home",
+      icon: <HomeOutlined />,
+      label: t.common.profile,
+      onClick: () => router.push("/"),
     },
     { type: "divider" },
     {

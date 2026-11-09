@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Input, Button, Card, Typography, Space, Divider, Alert, Tag } from "antd";
+import { Input, Button, Card, Typography, Space, Divider, Alert, Tag, Spin } from "antd";
 import { UserOutlined, LockOutlined, TeamOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18nStore } from "@/stores/i18n.store";
@@ -14,9 +15,11 @@ import { loginSchema, LoginFormData } from "@/schemas";
 
 const { Title, Text } = Typography;
 
-export default function LoginPage() {
+function LoginForm() {
   const { login, isLoggingIn } = useAuth();
   const { t } = useI18nStore();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/dashboard";
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
@@ -35,7 +38,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setErrorMsg(null);
-      await login(data);
+      await login(data, redirectUrl);
     } catch (err) {
       const msg = await parseApiError(err);
       setErrorMsg(msg);
@@ -127,9 +130,9 @@ export default function LoginPage() {
               type="primary"
               htmlType="submit"
               size="large"
-              loading={isLoggingIn}
               block
-              className="!mt-6 !h-11 !font-medium !shadow-md !shadow-blue-500/20"
+              loading={isLoggingIn}
+              className="bg-blue-600 font-semibold h-11 mt-2 rounded-xl shadow-md shadow-blue-500/20"
             >
               {t.auth.loginBtn}
             </Button>
@@ -146,7 +149,7 @@ export default function LoginPage() {
               className="p-2 border border-slate-200 rounded-lg text-left hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer"
             >
               <div className="font-semibold text-slate-700 flex items-center justify-between">
-                Admin <Tag color="red">CEO</Tag>
+                Admin <Tag color="red">All</Tag>
               </div>
               <div className="text-[11px] text-slate-400 truncate">admin@hrm.local</div>
             </button>
@@ -194,3 +197,16 @@ export default function LoginPage() {
   );
 }
 
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <Spin size="large" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
+  );
+}
